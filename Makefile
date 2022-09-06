@@ -5,7 +5,7 @@ all:
 	@cp -f grub.cfg ISO/boot/grub/grub.cfg
 
 iso: all
-	@grub-mkrescue -o husis.iso ISO > /dev/null
+	@grub-mkrescue -o husis.iso ISO >/dev/null 2>/dev/null
 
 disquete: all
 	@mdel -i husis.img ::/boot/menu.cfg
