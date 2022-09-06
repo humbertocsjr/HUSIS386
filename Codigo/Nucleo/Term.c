@@ -484,7 +484,7 @@ Status_t Term_ProcessaTeclado (Tecla_t tecla, Byte_t ascii, Boleano_t shift, Bol
     Term_t * term = _Term_Atual();
     if(pressionado & (ascii > 0))
     {
-        if(term->EntradaUso[term->EntradaFim] == NAO)
+        if(!term->EntradaUso[term->EntradaFim])
         {
             term->EntradaTemp[term->EntradaFim] = ascii;
             term->EntradaUso[term->EntradaFim] = SIM;
@@ -498,7 +498,7 @@ Byte_t Term_LeiaC()
 {
     Byte_t ret = 0;
     Term_t * term = _Term_Atual();
-    if(term->EntradaUso[term->EntradaInicio] == SIM)
+    if(term->EntradaUso[term->EntradaInicio])
     {
         ret = term->EntradaTemp[term->EntradaInicio];
         term->EntradaUso[term->EntradaInicio] =NAO;

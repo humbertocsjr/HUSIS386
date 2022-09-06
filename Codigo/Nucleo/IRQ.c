@@ -10,7 +10,7 @@ void IRQ_Processa(Regs_t * regs)
 {
     void (*processador)(Regs_t *regs) = _IRQ_Rotinas[regs->Interrupcao-32];
 
-    /*Mensagem("IRQ", "Processada IRQ{0:u}", regs->Interrupcao-32);*/
+    if(MSG_EXIBE_CHAMADA_IRQ & (regs->Interrupcao > 32))Mensagem("IRQ", "Processada IRQ{0:u}", regs->Interrupcao-32);
     if(processador != 0) processador(regs);
 
     if(regs->Interrupcao >= 40) ES_EscrevaByte(0xa0, 0x20);

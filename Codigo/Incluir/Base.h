@@ -21,6 +21,7 @@
     typedef unsigned int Pos_t;
     typedef unsigned int Status_t;
     typedef unsigned int Boleano_t;
+    typedef unsigned short Processo_t;
     #define NAO 0
     #define SIM -1
     #define STATUS_OK 0

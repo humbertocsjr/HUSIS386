@@ -12,6 +12,7 @@
     #define MSG_EXIBE_MAPA_GDT 0
     #define MSG_EXIBE_DADOS_GDT 0 
     #define MSG_EXIBE_REGISTRO_IRQ 0
+    #define MSG_EXIBE_CHAMADA_IRQ 0
 
 
 /* Principal.c */
@@ -37,6 +38,10 @@
     extern void Mem_CopiaBinario(Byte_t * destino, Byte_t * origem, Tam_t tam);
     extern void Mem_RepeteByte(Byte_t * destino, Byte_t valor, Tam_t quantidade);
     extern void Mem_RepeteUShort(UShort_t * destino, UShort_t valor, Tam_t quantidade);
+    extern Status_t Mem_Local_Libera(Byte_t * endereco);
+    extern Tam_t Mem_Local_Espaco_Livre();
+    extern Tam_t Mem_Local_Tam(Byte_t * endereco);
+    extern Byte_t * Mem_Local_Aloca(Tam_t tam);
     extern void Mem();
 
 /* Term.c */

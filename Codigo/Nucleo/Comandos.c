@@ -268,6 +268,12 @@ Status_t _Comando_CmdTempo(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SBy
     return STATUS_OK;
 }
 
+Status_t _Comando_CmdLivre(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SByte_t * constanteTexto, Tam_t valor0))
+{
+    saidaTexto("Memoria Nucleo: {0:u} KiB\n", Mem_Local_Espaco_Livre() / 1024);
+    return STATUS_OK;
+}
+
 void Comando()
 {
     for (Pos_t i = 0; i < COMANDO_LISTA_TAM; i++)
@@ -281,4 +287,5 @@ void Comando()
     Comando_RegistraConst("msg", "Gerencia as mensagens do Nucleo", &_Comando_CmdMsg);
     Comando_RegistraConst("ver", "Exibe a versao do Nucleo", &_Comando_CmdVer);
     Comando_RegistraConst("tempo", "Exibe a quanto tempo a maquina esta ativa", &_Comando_CmdTempo);
+    Comando_RegistraConst("livre", "Exibe a quanto tem de memoria disponivel para alocacao", &_Comando_CmdLivre);
 }

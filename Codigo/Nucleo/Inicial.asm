@@ -492,5 +492,5 @@ _irq:
     iret      
 
 section .bss
-    resb 8192
+    resb 32768
 HusisPilha:

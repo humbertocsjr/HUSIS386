@@ -40,7 +40,7 @@ void Teclado_Processa(Regs_t * regs)
         _Teclado_Ctrl = tecla->Pressionado;
         encontrado = SIM;
     }
-    else if(tecla->Pressionado == SIM)
+    else if(tecla->Pressionado)
     {
         if((_Teclado_Shift) & (tecla->TeclaComShift > 0))
         {
