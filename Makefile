@@ -15,7 +15,7 @@ disquete: all
 	
 
 qemu: iso disquete
-	@qemu-system-i386 -m 256 -cdrom husis.iso
+	@qemu-system-i386 -boot a -m 256 -cdrom husis.iso -fda husis.img
 
 mac-requisitos:
 	brew install nasm mtool

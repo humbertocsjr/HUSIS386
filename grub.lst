@@ -1,5 +1,5 @@
-timeout 10
+timeout 0
 default 0
 
 title HUSIS
-kernel --type=multiboot /husis
+kernel --type=multiboot /husis  :escreva TESTE

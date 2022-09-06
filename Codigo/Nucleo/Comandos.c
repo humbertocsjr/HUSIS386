@@ -87,7 +87,7 @@ Status_t _Comando_ProcessarConstIndividual(SByte_t * constante, Tam_t tam, void 
                 }
             }
         }
-        if(!encontrado) saidaTexto("Comando invalido",0);
+        if(!encontrado) saidaTexto("Comando desconhecido\n\n",0);
         
     }
 
@@ -257,6 +257,7 @@ Status_t _Comando_CmdVer(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SByte
     saidaTexto("HUSIS v{0:u}", (Tam_t)ver.Versao);
     saidaTexto(".{0:u}", (Tam_t)ver.SubVersao);
     saidaTexto(" R{0:u}\nCopyright (c) 2022, Humberto Costa dos Santos Junior (humbertocsjr)\n", (Tam_t)ver.Revisao);
+    saidaTexto("Argumentos do Nucleo: {0:C}\n", (Tam_t)Multiboot_ArgsConst());
     return STATUS_OK;
 }
 
