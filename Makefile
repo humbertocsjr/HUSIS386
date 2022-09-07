@@ -5,9 +5,11 @@ all:
 	@cp -f grub.cfg ISO/boot/grub/grub.cfg
 
 iso: all
+	@echo " -= Gerando imagem ISO =-"
 	@grub-mkrescue -o husis.iso ISO >/dev/null 2>/dev/null
 
 disquete: all
+	@echo " -= Gerando imagem de Disquete =-"
 	@mdel -i husis.img ::/boot/menu.cfg
 	@mcopy -i husis.img grub.lst ::/boot/menu.cfg
 	@mdel -i husis.img ::/husis
@@ -15,7 +17,8 @@ disquete: all
 	
 
 qemu: iso disquete
-	@qemu-system-i386 -boot a -m 256 -cdrom husis.iso -fda husis.img
+	@echo " -= Executando Emulador =-"
+	@qemu-system-i386 -boot a -m 16 -cdrom husis.iso -drive format=raw,file=husis.img,if=floppy
 
 mac-requisitos:
 	brew install nasm mtool

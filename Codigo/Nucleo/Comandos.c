@@ -271,7 +271,33 @@ Status_t _Comando_CmdTempo(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SBy
 
 Status_t _Comando_CmdLivre(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SByte_t * constanteTexto, Tam_t valor0))
 {
-    saidaTexto("Memoria Nucleo: {0:u} KiB\n", Mem_Local_Espaco_Livre() / 1024);
+    saidaTexto("Memoria Nucleo Livre....: {0:u} KiB", Mem_Local_EspacoLivre() / 1024);
+    saidaTexto(" de {0:u} KiB\n", Mem_Local_Capacidade() / 1024);
+    saidaTexto("Memoria Livre...........: {0:u} KiB", Mem_PaginasLivres() * 4);
+    saidaTexto(" de {0:u} KiB\n", Mem_TotalDePaginas() * 4);
+    return STATUS_OK;
+}
+
+Status_t _Comando_CmdTeclado(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SByte_t * constanteTexto, Tam_t valor0))
+{
+    Pos_t fim = _Comando_BuscaEspacosConst(args, 0, argsTam);
+
+    if(_Comando_Igual(args, fim, "desconhecidas"))
+    {
+        Teclado_ExibeDesconhecidas();
+    }
+    else if(_Comando_Igual(args, fim, "todas"))
+    {
+        Teclado_ExibeTodas();
+    }
+    else if(_Comando_Igual(args, fim, "oculta"))
+    {
+        Teclado_Oculta();
+    }
+    else
+    {
+        saidaTexto("Sub-Comandos aceitos:\n desconhecidas\t= Ativa a exibicao das teclas desconhecidas\n todas\t\t= Ativa a exibicao de todas teclas\n oculta\t\t= Oculta a escrita de qualquer tecla",0);
+    }
     return STATUS_OK;
 }
 
@@ -289,4 +315,5 @@ void Comando()
     Comando_RegistraConst("ver", "Exibe a versao do Nucleo", &_Comando_CmdVer);
     Comando_RegistraConst("tempo", "Exibe a quanto tempo a maquina esta ativa", &_Comando_CmdTempo);
     Comando_RegistraConst("livre", "Exibe a quanto tem de memoria disponivel para alocacao", &_Comando_CmdLivre);
+    Comando_RegistraConst("teclado", "Funcoes do modulo de teclado", &_Comando_CmdTeclado);
 }

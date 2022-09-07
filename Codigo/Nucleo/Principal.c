@@ -14,6 +14,16 @@ Versao_t Husis_Versao()
     return _Husis_Versao;
 }
 
+void FalhaGrave(SByte_t * modulo, SByte_t * msg, Tam_t valor0, Tam_t valor1)
+{
+    _Husis_EscreveMensagens = SIM;
+    Mensagem2(modulo, msg, valor0, valor1);
+    while(SIM)
+    {
+       __asm__ __volatile__ ("hlt");
+    }
+}
+
 void MensagemAtiva()
 {
     _Husis_EscreveMensagens = SIM;
@@ -182,8 +192,6 @@ void MensagemMapa(SByte_t * modulo, SByte_t * msg, Byte_t * ponteiro, Tam_t tam,
 
 }
 
-/* This is a very simple main() function. All it does is sit in an
-*  infinite loop. This will be like our 'idle' loop */
 void Inicio()
 {
 
@@ -193,29 +201,19 @@ void Inicio()
 
     Mensagem("Principal", "Iniciando Nucleo",0);
     Multiboot();
-    Mensagem("Principal", "Iniciando GDT",0);
     GDT();
-    Mensagem("Principal", "Iniciando IDT",0);
     IDT();
-    Mensagem("Principal", "Iniciando ISR",0);
     ISR();
-    Mensagem("Principal", "Iniciando IRQ",0);
     IRQ();
-    Mensagem("Principal", "Iniciando Gerenciador de Memoria",0);
     Mem();
-    Mensagem("Principal", "Iniciando Cronometro",0);
     Cronometro();
-    Mensagem("Principal", "Iniciando Teclado",0);
     Teclado();
-    Mensagem("Principal", "Iniciando Processador de Comandos",0);
     Comando();
 
     Comando_ProcessarConstAuto(Multiboot_ArgsConst(),&Comando_TermSaidaTexto);
 
     Comando_Term();
 
-    /* ...and leave this loop in. There is an endless loop in
-    *  'start.asm' also, if you accidentally delete this next line */
     for (;;)
     {
        __asm__ __volatile__ ("hlt");

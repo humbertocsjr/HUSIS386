@@ -1,5 +1,8 @@
-timeout 0
+timeout 2
 default 0
 
 title HUSIS
-kernel --type=multiboot /husis  :escreva TESTE
+kernel --type=multiboot /husis  :msg ativa
+
+title HUSIS Silencioso
+kernel --type=multiboot /husis  :msg desativa

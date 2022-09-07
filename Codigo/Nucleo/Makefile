@@ -2,6 +2,7 @@ ASM=nasm -f elf -o
 LD=i386-elf-ld -T Ligacao.ld -o
 CC=i386-elf-gcc -Wall -O -fstrength-reduce -fomit-frame-pointer -finline-functions -nostdinc -fno-builtin -IIncluir -I../Incluir -c -o
 all:
+	@echo " -= Compilando Nucleo =-"
 	@$(ASM) Temp/Inicial.o Inicial.asm
 	@$(CC) Temp/Principal.o Principal.c
 	@$(CC) Temp/ES.o ES.c

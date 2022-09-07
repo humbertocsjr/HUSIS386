@@ -47,28 +47,16 @@ SByte_t * Multiboot_ArgsConst()
 void Multiboot()
 {
     Mem_CopiaBinario((Byte_t *) &_Multiboot_Copia, (Byte_t *) _Multiboot_Leia(), sizeof(Multiboot_t));
-    if(_Multiboot_Copia.Marcadores & 1)
-    {
-        Mensagem2("Multiboot", "Memoria Alta: {1:u} KiB - Total Paginas: {2:u}", _Multiboot_Copia.MemoriaAlta, Multiboot_MemoriaAltaPaginas());
-    }
-    else
+    if(!(_Multiboot_Copia.Marcadores & 1))
     {
         _Multiboot_Copia.MemoriaBaixa = 639;
         _Multiboot_Copia.MemoriaAlta = 1024;
     }
-    if(_Multiboot_Copia.Marcadores & 2)
-    {
-        Mensagem("Multiboot", "Dispositivo inicial: {0:u}", (Tam_t)_Multiboot_Copia.DispositivoInicial);
-    }
-    else
+    if(!(_Multiboot_Copia.Marcadores & 2))
     {
         _Multiboot_Copia.DispositivoInicial = 0;
     }
-    if(_Multiboot_Copia.Marcadores & 4)
-    {
-        Mensagem("Multiboot", "Argumentos: {0:C}", (Tam_t)_Multiboot_Copia.Argumentos);
-    }
-    else
+    if(!(_Multiboot_Copia.Marcadores & 4))
     {
         _Multiboot_Copia.Argumentos = _Multiboot_ArgumentoVazio;
     }

@@ -1,5 +1,10 @@
 #include <HUSIS.h>
 
+void * _ISR_Rotinas[16] = 
+{
+    0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0
+};
 
 SByte_t * ISR_Nome[] = 
 {
@@ -37,9 +42,26 @@ SByte_t * ISR_Nome[] =
     "Reservado"
 };
 
+Status_t ISR_Registra(Pos_t irq, void (*processador)(Regs_t *regs))
+{
+    if(irq > 15) return STATUS_POSICAO_INVALIDA;
+    if(MSG_EXIBE_REGISTRO_ISR) Mensagem("ISR", "Registrando ISR{0:u}", irq);
+    _ISR_Rotinas[irq] = (void *)processador;
+    return STATUS_OK;
+}
+
+Status_t ISR_Desregistra(Pos_t irq)
+{
+    if(irq > 15) return STATUS_POSICAO_INVALIDA;
+    if(MSG_EXIBE_REGISTRO_ISR) Mensagem("ISR", "Desregistrando ISR{0:u}", irq);
+    _ISR_Rotinas[irq] = 0;
+    return STATUS_OK;
+}
+
 void ISR_ProcessaErro(Regs_t * regs)
 {
-    Mensagem3("ISR", "Processada ISR{0:u} [Erro Nro.: {1:u}]: {2:C}", regs->Interrupcao, regs->CodigoDeErro, (Tam_t)ISR_Nome[regs->Interrupcao]);
+    if(MSG_EXIBE_CHAMADA_ISR)Mensagem3("ISR", "Processada ISR{0:u} [Erro Nro.: {1:u}]: {2:C}", regs->Interrupcao, regs->CodigoDeErro, (Tam_t)ISR_Nome[regs->Interrupcao]);
+    if(_ISR_Rotinas[regs->Interrupcao] != 0) ((void (*)(Regs_t *regs))_ISR_Rotinas[regs->Interrupcao])(regs); 
 }
 
 

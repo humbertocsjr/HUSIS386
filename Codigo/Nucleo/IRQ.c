@@ -52,7 +52,6 @@ void IRQ()
     extern void IRQ14(); IDT_Config(46, (UInt_t)&IRQ14, 0x8, 0x8e);
     extern void IRQ15(); IDT_Config(47, (UInt_t)&IRQ15, 0x8, 0x8e);
 
-    Mensagem("IRQ", "Iniciando PIC", 0);
     ES_EscrevaByte(0x20, 0x11);
     ES_EscrevaByte(0xa0, 0x11);
     ES_EscrevaByte(0x21, 0x20);

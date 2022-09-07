@@ -13,6 +13,8 @@
     #define MSG_EXIBE_DADOS_GDT 0 
     #define MSG_EXIBE_REGISTRO_IRQ 0
     #define MSG_EXIBE_CHAMADA_IRQ 0
+    #define MSG_EXIBE_REGISTRO_ISR 0
+    #define MSG_EXIBE_CHAMADA_ISR 0
 
 
 /* Principal.c */
@@ -27,6 +29,7 @@
     extern void MensagemAtiva();
     extern void MensagemDesativa();
     extern Versao_t Husis_Versao();
+    extern void FalhaGrave(SByte_t * modulo, SByte_t * msg, Tam_t valor0, Tam_t valor1);
 
 /* ES.c */
     extern Byte_t ES_LeiaByte (UShort_t porta);
@@ -35,13 +38,34 @@
     extern void ES_EscrevaUShort (UShort_t porta, UShort_t dados);
 
 /* Mem.c */
+    /* Manipular memoria */
     extern void Mem_CopiaBinario(Byte_t * destino, Byte_t * origem, Tam_t tam);
     extern void Mem_RepeteByte(Byte_t * destino, Byte_t valor, Tam_t quantidade);
     extern void Mem_RepeteUShort(UShort_t * destino, UShort_t valor, Tam_t quantidade);
+    /* Memoria Local do Nucleo */
     extern Status_t Mem_Local_Libera(Byte_t * endereco);
-    extern Tam_t Mem_Local_Espaco_Livre();
+    extern Tam_t Mem_Local_EspacoLivre();
     extern Tam_t Mem_Local_Tam(Byte_t * endereco);
     extern Byte_t * Mem_Local_Aloca(Tam_t tam);
+    extern Byte_t * Mem_Local_AlocaAlinhado(Tam_t tam);
+    extern Tam_t Mem_Local_Capacidade();
+    /* Paginacao */
+    typedef struct
+    {
+        UInt_t Presente         :1;
+        UInt_t Escrita          :1;
+        UInt_t Usuario          :1;
+        UInt_t FoiAcessado      :1;
+        UInt_t FoiGravado       :1;
+        UInt_t Outro            :7;
+        UInt_t Posicao          :20;
+    } Mem_Pagina_t;
+    extern Mem_Pagina_t * Mem_Pagina(UInt_t endereco, Boleano_t cria, Pos_t * diretorio);
+    extern Pos_t * Mem_DiretorioAtual();
+    extern void Mem_AlocaPagina(Mem_Pagina_t * pagina, Boleano_t podeEscrever, Boleano_t pertenceAoNucleo);
+    extern void Mem_LiberaPagina(Mem_Pagina_t * pagina);
+    extern Tam_t Mem_PaginasLivres();
+    extern Tam_t Mem_TotalDePaginas();
     extern void Mem();
 
 /* Term.c */
@@ -143,6 +167,8 @@
 
 /* ISR.c */
     extern void ISR();
+    extern Status_t IRQ_Registra(Pos_t irq, void (*processador)(Regs_t *regs));
+    extern Status_t IRQ_Desregistra(Pos_t irq);
 
 /* IRQ.c */
     extern void IRQ();
@@ -164,7 +190,10 @@
     extern Status_t Teclado_RegistraShift(Pos_t codigo, Byte_t ascii, Tecla_t tecla);
     extern Status_t Teclado_RegistraExt(Pos_t codigo, Byte_t ascii, Tecla_t tecla);
     extern void Teclado_RegistraAcao(Status_t (* acao) (Tecla_t tecla, Byte_t ascii, Boleano_t shift, Boleano_t alt, Boleano_t ctrl, Boleano_t ext, Boleano_t pressionado));
-    extern void Teclado_EnUsIntl();;
+    extern void Teclado_EnUsIntl();
+    extern void Teclado_ExibeDesconhecidas();
+    extern void Teclado_ExibeTodas();
+    extern void Teclado_Oculta();
 
 /* Comandos.c */
     extern Status_t Comando_ProcessarConst(SByte_t * constante, Tam_t tam, void (*saidaTexto)(SByte_t * constanteTexto, Tam_t valor0));

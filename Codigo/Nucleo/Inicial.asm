@@ -75,6 +75,11 @@ _Mem_EscrevaCR0:
     pop ebp
     ret
 
+global _Mem_LeiaCR2
+_Mem_LeiaCR2:
+    mov eax, cr2
+    ret
+
 global _Mem_LeiaCR3
 _Mem_LeiaCR3:
     mov eax, cr3
