@@ -167,8 +167,8 @@
 
 /* ISR.c */
     extern void ISR();
-    extern Status_t IRQ_Registra(Pos_t irq, void (*processador)(Regs_t *regs));
-    extern Status_t IRQ_Desregistra(Pos_t irq);
+    extern Status_t ISR_Registra(Pos_t irq, void (*processador)(Regs_t *regs));
+    extern Status_t ISR_Desregistra(Pos_t irq);
 
 /* IRQ.c */
     extern void IRQ();
