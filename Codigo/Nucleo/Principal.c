@@ -205,10 +205,17 @@ void Inicio()
     IDT();
     ISR();
     IRQ();
+    Unidade();
+    Dispositivo();
+    Processo();
     Mem();
     Cronometro();
     Teclado();
     Comando();
+    Multitarefa();
+    Multitarefa_Habilita();
+
+    ATA();
 
     Comando_ProcessarConstAuto(Multiboot_ArgsConst(),&Comando_TermSaidaTexto);
 

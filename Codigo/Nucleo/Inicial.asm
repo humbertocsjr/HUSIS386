@@ -496,6 +496,17 @@ _irq:
     add esp, 8
     iret      
 
+global _Mem_LeiaNucleoPilhaBase
+_Mem_LeiaNucleoPilhaBase:
+    mov eax, HusisPilhaBase
+    ret      
+
+global _Mem_LeiaNucleoPilhaTopo
+_Mem_LeiaNucleoPilhaTopo:
+    mov eax, HusisPilha
+    ret
+
 section .bss
+HusisPilhaBase:
     resb 32768
 HusisPilha:

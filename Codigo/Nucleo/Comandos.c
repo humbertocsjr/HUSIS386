@@ -301,6 +301,193 @@ Status_t _Comando_CmdTeclado(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(S
     return STATUS_OK;
 }
 
+Status_t _Comando_CmdLista(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SByte_t * constanteTexto, Tam_t valor0))
+{
+    Item_t * item = 0;
+    Item_t * sub = 0;
+    SByte_t nome[ITEM_NOME_TAM +1];
+    Tam_t qtd = 0;
+    nome[ITEM_NOME_TAM] = 0;
+    Status_t ret = Item_AbreConst(args, argsTam, &item);
+    if(ret != STATUS_OK)
+    {
+        switch(ret)
+        {
+            case STATUS_UNIDADE_INVALIDA:
+            {
+                saidaTexto("Erro: {0:u} - Unidade nao encontrada ou invalida", ret);
+                break;
+            }
+            case STATUS_NAO_ENCONTRADO:
+            {
+                saidaTexto("Erro: {0:u} - Endereco nao encontrado", ret);
+                break;
+            }
+            default:
+            {
+                saidaTexto("Erro: {0:u} - Desconhecido", ret);
+                break;
+            }
+        }
+        return ret;
+    }
+    Const_Copia(nome, item->Nome, ITEM_NOME_TAM);
+    if(item->Tipo != ITEM_TIPO_DIRETORIO)
+    {
+        saidaTexto("'{0:C}' nao eh um diretorio", (Tam_t)&nome);
+        return STATUS_TIPO_INVALIDO;
+    }
+    saidaTexto("Diretorio '{0:C}':\n\n", (Tam_t)&nome);
+    ret = Item_QtdSubItens(item, &qtd);
+    if(ret != STATUS_OK)
+    {
+        Item_Fecha(item);
+        saidaTexto("Erro: {0:u} - Nao foi possivel buscar a quantidade de itens no diretorio", ret);
+        return ret;
+    }
+    for (Pos_t i = 0; i < qtd; i++)
+    {
+        ret = Item_SubItem(item, i, &sub);
+        if(ret != STATUS_OK)
+        {
+            Item_Fecha(item);
+            saidaTexto("Erro: {0:u} - Nao foi possivel abrir um item no diretorio", ret);
+            return ret;
+        }
+        Const_Copia(nome, sub->Nome, ITEM_NOME_TAM);
+        if(sub->Tipo == ITEM_TIPO_DIRETORIO)
+        {
+            saidaTexto(" {0:C} [Diretorio]\n", (Tam_t)&nome);
+        }
+        else
+        {
+            saidaTexto(" {0:C}\n", (Tam_t)&nome);
+        }
+        Item_Fecha(sub);
+    }
+    saidaTexto("\nQuantidade de itens: {0:u}\n", qtd);
+    Item_Fecha(item);
+    return ret;
+}
+
+Status_t _Comando_CmdBinario(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SByte_t * constanteTexto, Tam_t valor0))
+{
+    Item_t * item = 0;
+    SByte_t nome[ITEM_NOME_TAM +1];
+    Byte_t temp[16];
+    Tam_t qtd = 0;
+    Pos_t pos = 0;
+    nome[ITEM_NOME_TAM] = 0;
+    Status_t ret = Item_AbreConst(args, argsTam, &item);
+    if(ret != STATUS_OK)
+    {
+        switch(ret)
+        {
+            case STATUS_UNIDADE_INVALIDA:
+            {
+                saidaTexto("Erro: {0:u} - Unidade nao encontrada ou invalida", ret);
+                break;
+            }
+            case STATUS_NAO_ENCONTRADO:
+            {
+                saidaTexto("Erro: {0:u} - Endereco nao encontrado", ret);
+                break;
+            }
+            default:
+            {
+                saidaTexto("Erro: {0:u} - Desconhecido", ret);
+                break;
+            }
+        }
+        return ret;
+    }
+    Const_Copia(nome, item->Nome, ITEM_NOME_TAM);
+    if(item->Tipo != ITEM_TIPO_ARQUIVO)
+    {
+        saidaTexto("'{0:C}' nao eh um arquivo", (Tam_t)&nome);
+        return STATUS_TIPO_INVALIDO;
+    }
+    saidaTexto("POS       x0x1x2x3x4x5x6x7x8x9xAxBxCxDxExF   ASCII\n", 0);
+    while((ret = Item_Leia(item, temp, 16, &qtd)) == STATUS_OK)
+    {
+        if(qtd == 0) break;
+        saidaTexto("{0:H}: ", pos);
+        for (Pos_t i = 0; i < qtd; i++)
+        {
+            saidaTexto("{0:h}", temp[i]);
+        }
+        for (Pos_t i = 0; i < (16-qtd); i++)
+        {
+            saidaTexto("  ",0);
+        }
+        saidaTexto(" : ",0);
+        for (Pos_t i = 0; i < qtd; i++)
+        {
+            saidaTexto("{0:c}", temp[i]);
+        }
+        saidaTexto("\n",0);
+        pos += qtd;
+    }
+    Item_Fecha(item);
+    return ret;
+}
+
+Status_t _Comando_CmdTexto(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SByte_t * constanteTexto, Tam_t valor0))
+{
+    Item_t * item = 0;
+    SByte_t nome[ITEM_NOME_TAM +1];
+    Byte_t temp[256];
+    Tam_t qtd = 0;
+    Pos_t pos = 0;
+    Boleano_t continua = SIM;
+    nome[ITEM_NOME_TAM] = 0;
+    Status_t ret = Item_AbreConst(args, argsTam, &item);
+    if(ret != STATUS_OK)
+    {
+        switch(ret)
+        {
+            case STATUS_UNIDADE_INVALIDA:
+            {
+                saidaTexto("Erro: {0:u} - Unidade nao encontrada ou invalida", ret);
+                break;
+            }
+            case STATUS_NAO_ENCONTRADO:
+            {
+                saidaTexto("Erro: {0:u} - Endereco nao encontrado", ret);
+                break;
+            }
+            default:
+            {
+                saidaTexto("Erro: {0:u} - Desconhecido", ret);
+                break;
+            }
+        }
+        return ret;
+    }
+    Const_Copia(nome, item->Nome, ITEM_NOME_TAM);
+    if(item->Tipo != ITEM_TIPO_ARQUIVO)
+    {
+        saidaTexto("'{0:C}' nao eh um arquivo", (Tam_t)&nome);
+        return STATUS_TIPO_INVALIDO;
+    }
+    while(((ret = Item_Leia(item, temp, 256, &qtd)) == STATUS_OK) & continua)
+    {
+        if(qtd == 0) break;
+        for (Pos_t i = 0; i < qtd; i++)
+        {
+            if(temp[i] == 0)
+            {
+                continua = NAO;
+                break;
+            }
+            saidaTexto("{0:h}", temp[i]);
+        }
+        pos += qtd;
+    }
+    Item_Fecha(item);
+    return ret;
+}
+
 void Comando()
 {
     for (Pos_t i = 0; i < COMANDO_LISTA_TAM; i++)
@@ -316,4 +503,7 @@ void Comando()
     Comando_RegistraConst("tempo", "Exibe a quanto tempo a maquina esta ativa", &_Comando_CmdTempo);
     Comando_RegistraConst("livre", "Exibe a quanto tem de memoria disponivel para alocacao", &_Comando_CmdLivre);
     Comando_RegistraConst("teclado", "Funcoes do modulo de teclado", &_Comando_CmdTeclado);
+    Comando_RegistraConst("lista", "Lista o conteudo de um diretorio", &_Comando_CmdLista);
+    Comando_RegistraConst("binario", "Lista o conteudo de um arquivo binario", &_Comando_CmdBinario);
+    Comando_RegistraConst("texto", "Lista o conteudo de um arquivo de texto", &_Comando_CmdTexto);
 }

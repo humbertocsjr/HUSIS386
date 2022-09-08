@@ -66,6 +66,8 @@
     extern void Mem_LiberaPagina(Mem_Pagina_t * pagina);
     extern Tam_t Mem_PaginasLivres();
     extern Tam_t Mem_TotalDePaginas();
+    extern Pos_t * Mem_CriaDiretorio(Boleano_t clonaDiretorioDoNucleo);
+    extern void Mem_DefineDiretorio(Pos_t * diretorio);
     extern void Mem();
 
 /* Term.c */
@@ -150,7 +152,9 @@
 /* Const.c */
     extern Tam_t Const_Tam(SByte_t * constanteTexto);
     extern Tam_t Const_TamLimitado(SByte_t * constanteTexto, Tam_t capacidade);
-    extern Boleano_t Const_Igual(SByte_t * origem, SByte_t * destino, Tam_t tam);
+    extern Boleano_t Const_Igual(SByte_t * destino, SByte_t * origem, Tam_t tam);
+    extern void Const_Copia(SByte_t * destino, SByte_t * origem, Tam_t tam);
+    extern Status_t Const_DeNumero(SByte_t * destino, UInt_t valor, Tam_t tam);
 
 /* Caract.c */
     extern Boleano_t Caract_EhNumero(Byte_t c);
@@ -209,5 +213,81 @@
     extern Tam_t Multiboot_MemoriaAltaKiB();
     extern Tam_t Multiboot_MemoriaAltaPaginas();
     extern SByte_t * Multiboot_ArgsConst();
+
+/* Processo.c */
+    #define PROCESSO_CAPACIDADE 256
+    typedef struct 
+    {
+        Processo_t Processo;
+        Pos_t * DiretorioPaginacao;
+        Pos_t Binario;
+        Tam_t BinarioTam;
+        Pos_t Pilha;
+        Pos_t PilhaBase;
+        Tam_t PilhaTam;
+        Pos_t Ponteiro;
+        Boleano_t Existe;
+        Boleano_t Suspenso;
+    } Processo_Info_t;
+    extern Processo_Info_t * Processo_Nucleo();
+    extern Processo_Info_t * Processo_Cria();
+    extern Processo_Info_t * Processo_Leia(Processo_t processo);
+    extern Status_t Processo_Destroi(Processo_t processo);
+    extern Processo_Info_t * Processo_Proximo(Processo_t processo);
+    extern void Processo();
+
+/* Multitarefa.c */
+    extern void Multitarefa_Cronometro(Regs_t * regs);
+    extern void Multitarefa_Habilita();
+    extern void Multitarefa_Desabilita();
+    extern void Multitarefa();
+
+/* Unidade.c */
+    extern void Unidade();
+    extern Status_t Unidade_Registra(SByte_t * constanteNome, Pos_t * unidade, Pos_t dispositivo);
+    extern Status_t Unidade_Desregistra(Pos_t unidade);
+    extern Status_t Unidade_RegistraSisArq(SByte_t * constanteNome, Pos_t * sisArq, Status_t (*acaoMonta)(Pos_t unidade), Status_t (*acaoValida)(Pos_t unidade));
+    extern Status_t Unidade_DesregistraSisArq(Pos_t sisArq);
+    extern Status_t Unidade_Dispositivo(Pos_t unidade, Pos_t * dispositivo);
+    extern Status_t Unidade_Raiz(Pos_t unidade, Item_t * * item);
+    extern Status_t Unidade_RegistraMontagem
+    (
+        Pos_t unidade, 
+        Status_t (*acaoRaiz)(Pos_t unidade, Item_t * * raiz),
+        Status_t (*acaoDesmonta)(Pos_t unidade),
+        Status_t (*acaoItemSubItem)(Item_t * item, Pos_t posicao, Item_t * * subItem),
+        Status_t (*acaoItemQtdSubItem)(Item_t * item, Tam_t * qtd),
+        Status_t (*acaoItemVaPara)(Item_t * item, Pos_t posicao),
+        Tam_t (*acaoItemLeia)(Item_t * item, Byte_t * destino, Tam_t tam),
+        Tam_t (*acaoItemEscreva)(Item_t * item, Byte_t * origem, Tam_t tam),
+        Status_t (*acaoItemExclui)(Item_t * item),
+        Status_t (*acaoItemFecha)(Item_t * item),
+        Status_t (*acaoItemCriaDiretorio)(Item_t * item, SByte_t * constanteNome),
+        Status_t (*acaoItemCriaArquivo)(Item_t * item, SByte_t * constanteNome)
+    );
+    extern Status_t Item_SubItem(Item_t * item, Pos_t posicao, Item_t * * subItem);
+    extern Status_t Item_QtdSubItens(Item_t * item, Tam_t * qtd);
+    extern Boleano_t Item_EhDiretorio(Item_t * item);
+    extern Boleano_t Item_EhArquivo(Item_t * item);
+    extern Status_t Item_VaPara(Item_t * item, Pos_t posicao);
+    extern Status_t Item_Leia(Item_t * item, Byte_t * destino, Tam_t tam, Tam_t * lido);
+    extern Status_t Item_Escreva(Item_t * item, Byte_t * origem, Tam_t tam, Tam_t * escrito);
+    extern Status_t Item_Exclui(Item_t * item);
+    extern Status_t Item_Fecha(Item_t * item);
+    extern Status_t Item_CriaDiretorio(Item_t * item, SByte_t * constanteNome);
+    extern Status_t Item_CriaArquivo(Item_t * item, SByte_t * constanteNome);
+    extern Status_t Item_AbreConst(SByte_t * constanteEndereco, Tam_t tam, Item_t * * item);
+
+/* Dispositivo.c */
+    extern Status_t Dispositivo_Registra(Pos_t * novoDispositivo, Pos_t dispositivoAcima, SByte_t * constanteNome, Boleano_t adicionaNumero, UInt_t dispNumero, UInt_t id, Tam_t blocoTam, Tam_t (*acaoLeia)(void * disp, Pos_t posicao, Byte_t * destino, Tam_t tam), Tam_t (*acaoEscreva)(void * disp, Pos_t posicao, Byte_t * origem, Tam_t tam));
+    extern Status_t Dispositivo_DefinePorta(Pos_t dispositivo, Pos_t aux, UShort_t porta);
+    extern Status_t Dispositivo_LeiaBytePorta(Pos_t dispositivo, Pos_t aux, Byte_t * valor);
+    extern Status_t Dispositivo_EscrevaBytePorta(Pos_t dispositivo, Pos_t aux, Byte_t valor);
+    extern Status_t Dispositivo_LeiaUShortPorta(Pos_t dispositivo, Pos_t aux, UShort_t * valor);
+    extern Status_t Dispositivo_EscrevaUShortPorta(Pos_t dispositivo, Pos_t aux, UShort_t valor);
+    extern void Dispositivo();
+
+/* ATA.c */
+    extern void ATA();
 
 #endif

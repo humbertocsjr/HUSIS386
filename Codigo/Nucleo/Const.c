@@ -22,11 +22,46 @@ Tam_t Const_TamLimitado(SByte_t * constanteTexto, Tam_t capacidade)
     return ret;
 }
 
-Boleano_t Const_Igual(SByte_t * origem, SByte_t * destino, Tam_t tam)
+Boleano_t Const_Igual(SByte_t * destino, SByte_t * origem, Tam_t tam)
 {
     for (Tam_t i = 0; i < tam; i++)
     {
         if(origem[i] != destino[i]) return NAO;
     }
     return SIM;
+}
+
+void Const_Copia(SByte_t * destino, SByte_t * origem, Tam_t tam)
+{
+    for (Tam_t i = 0; i < tam; i++)
+    {
+        destino[i] = origem[i];
+        if(destino[i] == 0) break;
+    }
+}
+
+Status_t Const_DeNumero(SByte_t * destino, UInt_t valor, Tam_t tam)
+{
+    if(tam == 0) return STATUS_ESTOURO_DA_CAPACIDADE;
+    Status_t ret = STATUS_OK;
+    UInt_t digito[10];
+    UInt_t tmp = valor;
+    Pos_t pos = 0;
+    for (Pos_t i = 0; i < 10; i++)
+    {
+        digito[pos] = (tmp % 10) + '0';
+        tmp /= 10;
+        pos++;
+        if(tmp == 0) break;
+    }
+    for (Pos_t i = 0; i < tam; i++)
+    {
+        destino[i] = 0;
+    }
+    if((pos + 1) >= tam) return STATUS_ESTOURO_DA_CAPACIDADE;
+    for (Pos_t i = 0; i < pos; i++)
+    {
+        destino[i] = digito[pos - i - 1];
+    }
+    return ret;
 }

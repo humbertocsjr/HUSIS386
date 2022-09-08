@@ -31,6 +31,12 @@
     #define STATUS_VAZIO 4
     #define STATUS_COMANDO_DESCONHECIDO 5
     #define STATUS_ESTOURO_DA_CAPACIDADE 6
+    #define STATUS_UNIDADE_INVALIDA 7
+    #define STATUS_SISARQ_INVALIDO 8
+    #define STATUS_TIPO_INVALIDO 9
+    #define STATUS_DISPOSITIVO_INVALIDO 10
+    #define STATUS_ACESSO_NEGADO 11
+    #define STATUS_NAO_ENCONTRADO 12
     typedef struct
     {
         UShort_t Versao;
@@ -60,5 +66,46 @@
         UInt_t ESP;
         UInt_t SS;
     } Regs_t;
+
+    #define DISPOSITIVO_NOME_TAM 32
+
+    #define DISPOSITIVO_TIPO_DISCO 10
+    #define DISPOSITIVO_PORTAS_CAPACIDADE 16
+
+    typedef struct 
+    {
+        Pos_t Dispositivo;
+        Pos_t DispositivoAcima;
+        Boleano_t Existe;
+        Boleano_t Ativo;
+        SByte_t NomeConst[DISPOSITIVO_NOME_TAM];
+        Pos_t DispositivoNumero;
+        UShort_t Tipo;
+        UShort_t Porta[DISPOSITIVO_PORTAS_CAPACIDADE];
+        UInt_t Identificador;
+        Tam_t TamanhoDeUmBloco;
+        Tam_t (*AcaoLeia)(void * disp, Pos_t posicao, Byte_t * destino, Tam_t tam);
+        Tam_t (*AcaoEscreva)(void * disp, Pos_t posicao, Byte_t * destino, Tam_t tam);
+    } Dispositivo_t;
+
+    #define ITEM_NOME_TAM 64
+
+    #define ITEM_TIPO_NENHUM 0
+    #define ITEM_TIPO_ARQUIVO 0x10
+    #define ITEM_TIPO_DIRETORIO 0x20
+
+    #define ITEM_ESPECIAL_NENHUM 0
+    #define ITEM_ESPECIAL_DISPOSITIVO 0x10
+
+    typedef struct
+    {
+        Pos_t Unidade;
+        Pos_t Identificador;
+        SByte_t Nome[ITEM_NOME_TAM];
+        UShort_t Tipo;
+        UShort_t Especial;
+        Pos_t PosicaoNoItem;
+        Pos_t PosicaoEspecial;
+    } Item_t;
 
 #endif

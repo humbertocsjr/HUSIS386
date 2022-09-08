@@ -19,4 +19,10 @@ all:
 	@$(CC) Temp/TecladoEnUsIntl.o Teclados/EnUsIntl.c
 	@$(CC) Temp/Comandos.o Comandos.c
 	@$(CC) Temp/Multiboot.o Multiboot.c
-	@$(LD) Temp/HUSIS Temp/Inicial.o Temp/Principal.o Temp/ES.o Temp/Mem.o Temp/Term.o Temp/Caract.o Temp/Const.o Temp/GDT.o Temp/IDT.o Temp/ISR.o Temp/IRQ.o Temp/Cronometro.o Temp/Teclado.o Temp/TecladoEnUsIntl.o Temp/Comandos.o Temp/Multiboot.o
+	@$(CC) Temp/Processo.o Processo.c
+	@$(CC) Temp/Multitarefa.o Multitarefa.c
+	@$(CC) Temp/ATA.o ATA.c
+	@$(CC) Temp/Unidade.o Unidade.c
+	@$(CC) Temp/Dispositivo.o Dispositivo.c
+	@cp Ligacao.ld Temp/Ligacao.ld
+	@cd Temp && $(LD) HUSIS Inicial.o Principal.o ES.o Mem.o Term.o Caract.o Const.o GDT.o IDT.o ISR.o IRQ.o Cronometro.o Teclado.o TecladoEnUsIntl.o Comandos.o Multiboot.o Processo.o Multitarefa.o ATA.o Unidade.o Dispositivo.o

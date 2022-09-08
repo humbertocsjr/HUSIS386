@@ -28,6 +28,8 @@ extern void _Mem_EscrevaCR0(Tam_t novo);
 extern Tam_t _Mem_LeiaCR2();
 extern Tam_t _Mem_LeiaCR3();
 extern void _Mem_EscrevaCR3(Tam_t novo);
+extern Pos_t _Mem_LeiaNucleoPilhaBase();
+extern Pos_t _Mem_LeiaNucleoPilhaTopo();
 
 void Mem_CopiaBinario(Byte_t * destino, Byte_t * origem, Tam_t tam)
 {
@@ -270,10 +272,11 @@ Tam_t Mem_PaginasLivres()
     return ret;
 }
 
-void _Mem_DefineDiretorio(Pos_t * diretorio)
+__volatile__ void Mem_DefineDiretorio(Pos_t * diretorio)
 {
     _Mem_EscrevaCR3((Tam_t)diretorio);
     _Mem_EscrevaCR0(_Mem_LeiaCR0() | 0x80000000);
+    _Mem_DiretorioAtual = diretorio;
 }
 
 Pos_t * Mem_DiretorioAtual()
@@ -312,6 +315,20 @@ void _Mem_FalhaPaginacao(Regs_t * regs)
 
     Mensagem5("Mem", "FALHA DE PAGINACAO:\n Endereco: {0:u} / 0x{0:H}\n Tentou escrever: {1:s}\n Modo usuario: {2:s}\n Reservado: {3:s}\n Pagina existe: {4:s}", endereco, tentouEscrever, usuario, reservado, presente);
     FalhaGrave("Mem","Falha de Paginacao em {0:u} / 0x{0:H}", endereco, 0);
+}
+
+Pos_t * Mem_CriaDiretorio(Boleano_t clonaDiretorioDoNucleo)
+{
+    Pos_t * ret = (Pos_t *)Mem_Local_AlocaAlinhado(4096);
+    for (Pos_t i = 0; i < 1024; i++)
+    {
+        ret[i] = 0 | 2;
+        if(clonaDiretorioDoNucleo & (i < 16))
+        {
+            ret[i] = _Mem_Diretorio[i];
+        }
+    }
+    return ret;
 }
 
 void Mem()
@@ -362,7 +379,7 @@ void Mem()
     /* Define o tamanho da memoria em paginas*/    
     _Mem_TotalPaginas = Multiboot_MemoriaAltaPaginas();
 
-    _Mem_Diretorio = (Pos_t *)Mem_Local_AlocaAlinhado(4096);
+    _Mem_Diretorio = Mem_CriaDiretorio(NAO);
     _Mem_DiretorioAtual = _Mem_Diretorio;
     if(_Mem_Diretorio == 0) FalhaGrave("Mem", "Nao foi possivel alocar 4096 Bytes para o Diretorio de Paginacao",0,0);
     _Mem_Tabela = (Mem_Pagina_t *)Mem_Local_AlocaAlinhado(4096);
@@ -375,15 +392,8 @@ void Mem()
         _Mem_Tabela[i].Presente = 1;
         _Mem_Tabela[i].Escrita = 1;
         _Mem_Tabela[i].Posicao = i;
-        if(i == 0)
-        {
-            _Mem_Diretorio[i] = (Tam_t)_Mem_Tabela | 3;
-        }
-        else
-        {
-            _Mem_Diretorio[i] = 0 | 2;
-        }
     }
+    _Mem_Diretorio[0] = (Tam_t)_Mem_Tabela | 3;
 
     _Mem_MapaTam = _Mem_TotalPaginas / 8;
     _Mem_Mapa = (Byte_t *)Mem_Local_Aloca(_Mem_MapaTam);
@@ -405,8 +415,15 @@ void Mem()
 
     /* Registra e ativa a paginacao */
     ISR_Registra(14, &_Mem_FalhaPaginacao);
-    _Mem_DefineDiretorio(_Mem_Diretorio);
+    Mem_DefineDiretorio(Mem_DiretorioAtual());
     
-    
-
+    /* Criação do processo do nucleo com os dados da memoria */
+    Processo_Info_t * nucleo = Processo_Nucleo();
+    nucleo->Binario = _Mem_LeiaNucleoCodigo();
+    nucleo->BinarioTam = (Pos_t)_Mem_Local_Fim;
+    nucleo->PilhaBase = _Mem_LeiaNucleoPilhaBase();
+    nucleo->Pilha = _Mem_LeiaNucleoPilhaTopo();
+    nucleo->PilhaTam = nucleo->Pilha - nucleo->Pilha;
+    nucleo->Existe = SIM;
+    nucleo->Suspenso = NAO;
 }
