@@ -37,6 +37,9 @@
     #define STATUS_DISPOSITIVO_INVALIDO 10
     #define STATUS_ACESSO_NEGADO 11
     #define STATUS_NAO_ENCONTRADO 12
+    #define STATUS_NAO_IMPLEMENTADO 13
+    #define STATUS_NAO_FOI_POSSIVEL_LER 14
+    #define STATUS_NAO_FOI_POSSIVEL_ESCREVER 15
     typedef struct
     {
         UShort_t Versao;
@@ -71,6 +74,7 @@
 
     #define DISPOSITIVO_TIPO_DISCO 10
     #define DISPOSITIVO_PORTAS_CAPACIDADE 16
+    #define DISPOSITIVO_INFO_CAPACIDADE 32
 
     typedef struct 
     {
@@ -84,8 +88,10 @@
         UShort_t Porta[DISPOSITIVO_PORTAS_CAPACIDADE];
         UInt_t Identificador;
         Tam_t TamanhoDeUmBloco;
+        Tam_t Tamanho;
         Tam_t (*AcaoLeia)(void * disp, Pos_t posicao, Byte_t * destino, Tam_t tam);
         Tam_t (*AcaoEscreva)(void * disp, Pos_t posicao, Byte_t * destino, Tam_t tam);
+        UInt_t Info[DISPOSITIVO_INFO_CAPACIDADE];
     } Dispositivo_t;
 
     #define ITEM_NOME_TAM 64
@@ -107,5 +113,8 @@
         Pos_t PosicaoNoItem;
         Pos_t PosicaoEspecial;
     } Item_t;
+
+/* SisArq.c */
+    extern void SisArq();
 
 #endif

@@ -61,14 +61,14 @@ Tam_t Cronometro_Horas()
     return _Cronometro_Horas;
 }
 
-Tam_t _Cronometro_Leia(void * disp, Pos_t posicao, Byte_t * destino, Tam_t tam)
+Tam_t _Cronometro_Leia(Dispositivo_t * disp, Pos_t posicao, Byte_t * destino, Tam_t tam)
 {
     Tam_t ret = 0;
     switch (posicao)
     {
         case 0:
         {
-            switch (((Dispositivo_t *)disp)->Identificador)
+            switch (disp->Identificador)
             {
                 case 0:
                 {
@@ -89,6 +89,75 @@ Tam_t _Cronometro_Leia(void * disp, Pos_t posicao, Byte_t * destino, Tam_t tam)
             }
             break;
         }
+        case 1:
+        {
+            switch (((Dispositivo_t *)disp)->Identificador)
+            {
+                case 0:
+                {
+                    if(tam < 4) return 0;
+                    ((UInt_t *) destino)[0] = _Cronometro_Segundos;
+                    ret = 4;
+                    break;
+                }
+                case 1:
+                {
+                    if(tam < 12) return 0;
+                    if(Const_DeNumero((SByte_t *)destino, _Cronometro_Segundos, tam) == STATUS_OK)
+                    {
+                        ret = Const_TamLimitado((SByte_t *)destino, tam);
+                    }
+                    break;
+                }
+            }
+            break;
+        }
+        case 2:
+        {
+            switch (((Dispositivo_t *)disp)->Identificador)
+            {
+                case 0:
+                {
+                    if(tam < 4) return 0;
+                    ((UInt_t *) destino)[0] = _Cronometro_Minutos;
+                    ret = 4;
+                    break;
+                }
+                case 1:
+                {
+                    if(tam < 12) return 0;
+                    if(Const_DeNumero((SByte_t *)destino, _Cronometro_Minutos, tam) == STATUS_OK)
+                    {
+                        ret = Const_TamLimitado((SByte_t *)destino, tam);
+                    }
+                    break;
+                }
+            }
+            break;
+        }
+        case 3:
+        {
+            switch (((Dispositivo_t *)disp)->Identificador)
+            {
+                case 0:
+                {
+                    if(tam < 4) return 0;
+                    ((UInt_t *) destino)[0] = _Cronometro_Horas;
+                    ret = 4;
+                    break;
+                }
+                case 1:
+                {
+                    if(tam < 12) return 0;
+                    if(Const_DeNumero((SByte_t *)destino, _Cronometro_Horas, tam) == STATUS_OK)
+                    {
+                        ret = Const_TamLimitado((SByte_t *)destino, tam);
+                    }
+                    break;
+                }
+            }
+            break;
+        }
         default:
         {
             ret = 0;
@@ -97,7 +166,7 @@ Tam_t _Cronometro_Leia(void * disp, Pos_t posicao, Byte_t * destino, Tam_t tam)
     return ret;
 }
 
-Tam_t _Cronometro_Escreva(void * disp, Pos_t posicao, Byte_t * origem, Tam_t tam)
+Tam_t _Cronometro_Escreva(Dispositivo_t * disp, Pos_t posicao, Byte_t * origem, Tam_t tam)
 {
     return 0;
 }
@@ -113,6 +182,6 @@ void Cronometro()
     __asm__ __volatile__ ("sti");
 
     Pos_t disp = 0;
-    Dispositivo_Registra(&disp, 0, "Cronometro Binario", NAO, 0, 0, 4, &_Cronometro_Leia, &_Cronometro_Escreva);
-    Dispositivo_Registra(&disp, 0, "Cronometro ASCII", NAO, 0, 1, 12, &_Cronometro_Leia, &_Cronometro_Escreva);
+    Dispositivo_Registra(&disp, 0, "Cronometro Binario", NAO, 0, 0, 4, 2, &_Cronometro_Leia, &_Cronometro_Escreva);
+    Dispositivo_Registra(&disp, 0, "Cronometro ASCII", NAO, 0, 1, 12, 2, &_Cronometro_Leia, &_Cronometro_Escreva);
 }

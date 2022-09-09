@@ -315,7 +315,7 @@ Status_t _Comando_CmdLista(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SBy
         {
             case STATUS_UNIDADE_INVALIDA:
             {
-                saidaTexto("Erro: {0:u} - Unidade nao encontrada ou invalida", ret);
+                saidaTexto("Erro: {0:u} - Unidade nao montada ou invalida", ret);
                 break;
             }
             case STATUS_NAO_ENCONTRADO:
@@ -385,7 +385,7 @@ Status_t _Comando_CmdBinario(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(S
         {
             case STATUS_UNIDADE_INVALIDA:
             {
-                saidaTexto("Erro: {0:u} - Unidade nao encontrada ou invalida", ret);
+                saidaTexto("Erro: {0:u} - Unidade nao montada ou invalida", ret);
                 break;
             }
             case STATUS_NAO_ENCONTRADO:
@@ -405,6 +405,7 @@ Status_t _Comando_CmdBinario(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(S
     if(item->Tipo != ITEM_TIPO_ARQUIVO)
     {
         saidaTexto("'{0:C}' nao eh um arquivo", (Tam_t)&nome);
+        Item_Fecha(item);
         return STATUS_TIPO_INVALIDO;
     }
     saidaTexto("POS       x0x1x2x3x4x5x6x7x8x9xAxBxCxDxExF   ASCII\n", 0);
@@ -448,7 +449,7 @@ Status_t _Comando_CmdTexto(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SBy
         {
             case STATUS_UNIDADE_INVALIDA:
             {
-                saidaTexto("Erro: {0:u} - Unidade nao encontrada ou invalida", ret);
+                saidaTexto("Erro: {0:u} - Unidade nao montada ou invalida", ret);
                 break;
             }
             case STATUS_NAO_ENCONTRADO:
@@ -468,6 +469,7 @@ Status_t _Comando_CmdTexto(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SBy
     if(item->Tipo != ITEM_TIPO_ARQUIVO)
     {
         saidaTexto("'{0:C}' nao eh um arquivo", (Tam_t)&nome);
+        Item_Fecha(item);
         return STATUS_TIPO_INVALIDO;
     }
     while(((ret = Item_Leia(item, temp, 256, &qtd)) == STATUS_OK) & continua)
@@ -485,6 +487,208 @@ Status_t _Comando_CmdTexto(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SBy
         pos += qtd;
     }
     Item_Fecha(item);
+    return ret;
+}
+
+Status_t _Comando_CmdUnidades(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SByte_t * constanteTexto, Tam_t valor0))
+{
+    SByte_t nome[65];
+    nome[64] = 0;
+    Pos_t qtd = Unidade_Quantidade();
+    saidaTexto("Unidades:\n\n", 0);
+    for (Pos_t i = 0; i < qtd; i++)
+    {
+        Unidade_LeiaNomeConst(i, nome, 64);
+        if(Const_TamLimitado(nome,64) != 0)
+        {
+            if(Const_Igual(nome, "#", 64))
+            {
+                saidaTexto(" [{0:C}] Unidade especial que contem os dispositivos\n", (Tam_t)nome);
+            }
+            else
+            {
+                saidaTexto(" [{0:C}]\n", (Tam_t)nome);
+            }
+        }
+    }
+    return STATUS_OK;
+}
+
+Status_t _Comando_CmdBloco(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SByte_t * constanteTexto, Tam_t valor0))
+{
+    Pos_t arg1 = _Comando_IgnoraEspacosConst(args, 0, argsTam);
+    Pos_t arg1Fim = _Comando_BuscaEspacosConst(args, arg1, argsTam);
+    Pos_t arg1Tam = arg1Fim - arg1;
+    Pos_t arg2 = _Comando_IgnoraEspacosConst(args, arg1Fim, argsTam);
+    Pos_t arg2Fim = _Comando_BuscaEspacosConst(args, arg2, argsTam);
+    Pos_t arg3 = _Comando_IgnoraEspacosConst(args, arg2Fim, argsTam);
+    Pos_t arg3Fim = argsTam;
+    Item_t * item = 0;
+    SByte_t nome[ITEM_NOME_TAM +1];
+    Byte_t * temp;
+    Tam_t qtd = 0;
+    Pos_t pos = 0;
+    nome[ITEM_NOME_TAM] = 0;
+    if((arg1 == arg1Fim) |(arg2 == arg2Fim) |(arg3 == arg3Fim))
+    {
+        saidaTexto("Uso: bloco [Tamanho do bloco: 512 | 1024 | 2048 | 4096] [Posicao] [Arquivo/Dispositivo]", 0);
+        return STATUS_FORMATO_INVALIDO;
+    }
+    if(arg1Tam == 3 && Const_Igual("512", args+ arg1, arg1Fim - arg1) )
+    {
+        qtd = 512;
+        temp = Mem_Local_Aloca(512);
+    }
+    else if(arg1Tam == 4 && Const_Igual("1024", args+ arg1, arg1Fim - arg1) )
+    {
+        qtd = 1024;
+        temp = Mem_Local_Aloca(1024);
+    }
+    else if(arg1Tam == 4 && Const_Igual("2048", args+ arg1, arg1Fim - arg1) )
+    {
+        qtd = 2048;
+        temp = Mem_Local_Aloca(2048);
+    }
+    else if(arg1Tam == 4 && Const_Igual("4096", args+ arg1, arg1Fim - arg1) )
+    {
+        qtd = 4096;
+        temp = Mem_Local_Aloca(4096);
+    }
+    else
+    {
+        saidaTexto("Tamanho de bloco nao suportado", 0);
+        return STATUS_FORMATO_INVALIDO;
+    }
+    
+    Status_t ret = Const_ParaNumero(args+ arg2, arg2Fim - arg2, &pos);
+    if(ret != STATUS_OK)
+    {
+        saidaTexto("Posicao do bloco nao numerica", 0);
+    }
+    ret = Item_AbreConst(args + arg3, arg3Fim - arg3, &item);
+    if(ret != STATUS_OK)
+    {
+        switch(ret)
+        {
+            case STATUS_UNIDADE_INVALIDA:
+            {
+                saidaTexto("Erro: {0:u} - Unidade nao montada ou invalida", ret);
+                break;
+            }
+            case STATUS_NAO_ENCONTRADO:
+            {
+                saidaTexto("Erro: {0:u} - Endereco nao encontrado", ret);
+                break;
+            }
+            default:
+            {
+                saidaTexto("Erro: {0:u} - Desconhecido", ret);
+                break;
+            }
+        }
+        Mem_Local_Libera(temp);
+        return ret;
+    }
+    Const_Copia(nome, item->Nome, ITEM_NOME_TAM);
+    if(item->Tipo != ITEM_TIPO_ARQUIVO)
+    {
+        saidaTexto("'{0:C}' nao eh um arquivo", (Tam_t)&nome);
+        Item_Fecha(item);
+        Mem_Local_Libera(temp);
+        return STATUS_TIPO_INVALIDO;
+    }
+    ret = Item_VaPara(item, pos);
+    if(ret == STATUS_OK)
+    {
+        if((ret = Item_Leia(item, temp, qtd, &qtd)) == STATUS_OK)
+        {
+            if(qtd > 0)
+            {
+                saidaTexto("Bloco: {0:u}\n", pos);
+                saidaTexto("POS       x0x1x2x3x4x5x6x7x8x9xAxBxCxDxExFx0x1x2x3x4x5x6x7x8x9xAxBxCxDxExF\n", 0);
+                for (Pos_t i = 0; i < qtd; i+=32)
+                {
+                    saidaTexto("{0:H}: ", i);
+                    for (Pos_t j = 0; j < 32; j++)
+                    {
+                        saidaTexto("{0:h}", temp[i+j]);
+                    }
+                    saidaTexto("\n",0);
+                }
+                saidaTexto("Bloco: {0:u}\n", pos);
+            }
+            else
+            {
+                saidaTexto("Bloco vazio\n", 0);
+            }
+        }
+        else
+        {
+            saidaTexto("Nao foi possivel ler. Erro: {0:u}\n", ret);
+        }
+    }
+    Item_Fecha(item);
+    Mem_Local_Libera(temp);
+    return ret;
+}
+
+Status_t _Comando_CmdMonta(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SByte_t * constanteTexto, Tam_t valor0))
+{
+    Pos_t arg1 = _Comando_IgnoraEspacosConst(args, 0, argsTam);
+    Pos_t arg1Fim = _Comando_BuscaEspacosConst(args, arg1, argsTam);
+    Pos_t arg1Tam = arg1Fim - arg1;
+    Pos_t arg2 = _Comando_IgnoraEspacosConst(args, arg1Fim, argsTam);
+    Pos_t arg2Fim = argsTam;
+    Pos_t arg2Tam = arg2Fim - arg2;
+    if((arg1 == arg1Fim) |(arg2 == arg2Fim))
+    {
+        saidaTexto("Uso: monta [Sistema de Arquivos] [Unidade]", 0);
+        return STATUS_FORMATO_INVALIDO;
+    }
+    Status_t ret = Unidade_Monta(args + arg1, arg1Tam, args + arg2, arg2Tam);
+    switch (ret)
+    {
+        case STATUS_OK:
+        {
+            saidaTexto("Montado com sucesso", 0);
+            break;
+        }
+        default:
+        {
+            saidaTexto("Erro: {0:u}", ret);
+            break;
+        }
+    }
+    return ret;
+}
+
+Status_t _Comando_CmdFormata(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SByte_t * constanteTexto, Tam_t valor0))
+{
+    Pos_t arg1 = _Comando_IgnoraEspacosConst(args, 0, argsTam);
+    Pos_t arg1Fim = _Comando_BuscaEspacosConst(args, arg1, argsTam);
+    Pos_t arg1Tam = arg1Fim - arg1;
+    Pos_t arg2 = _Comando_IgnoraEspacosConst(args, arg1Fim, argsTam);
+    Pos_t arg2Fim = argsTam;
+    Pos_t arg2Tam = arg2Fim - arg2;
+    if((arg1 == arg1Fim) |(arg2 == arg2Fim))
+    {
+        saidaTexto("Uso: formata [Sistema de Arquivos] [Unidade]", 0);
+        return STATUS_FORMATO_INVALIDO;
+    }
+    Status_t ret = Unidade_Formata(args + arg1, arg1Tam, args + arg2, arg2Tam);
+    switch (ret)
+    {
+        case STATUS_OK:
+        {
+            saidaTexto("Formatado com sucesso", 0);
+            break;
+        }
+        default:
+        {
+            saidaTexto("Erro: {0:u}", ret);
+            break;
+        }
+    }
     return ret;
 }
 
@@ -506,4 +710,8 @@ void Comando()
     Comando_RegistraConst("lista", "Lista o conteudo de um diretorio", &_Comando_CmdLista);
     Comando_RegistraConst("binario", "Lista o conteudo de um arquivo binario", &_Comando_CmdBinario);
     Comando_RegistraConst("texto", "Lista o conteudo de um arquivo de texto", &_Comando_CmdTexto);
+    Comando_RegistraConst("unidades", "Lista as unidades existentes", &_Comando_CmdUnidades);
+    Comando_RegistraConst("bloco", "Exibe um bloco", &_Comando_CmdBloco);
+    Comando_RegistraConst("monta", "Monta uma unidade", &_Comando_CmdMonta);
+    Comando_RegistraConst("formata", "Formata uma unidade", &_Comando_CmdFormata);
 }

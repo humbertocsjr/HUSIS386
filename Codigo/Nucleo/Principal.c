@@ -36,6 +36,26 @@ void MensagemDesativa()
     Mensagem("Principal", "Alterado impressao das mensagens no terminal para: {0:s}", _Husis_EscreveMensagens);
 }
 
+void MensagemConst(SByte_t * modulo, SByte_t * msg, SByte_t * constAdicional, Tam_t constAdicionalTam)
+{
+    Byte_t cor_frente;
+    Byte_t cor_fundo;
+    if(_Husis_EscreveMensagens)
+    {
+        cor_frente = Term_LeiaCorFrente();
+        cor_fundo = Term_LeiaCorFundo();
+        Term_AlteraCor(TERM_COR_PRETO, TERM_COR_VERMELHO);
+        Term_EscrevaFmt1("NUCLEO<{0:C}>: ", (Tam_t)modulo);
+        Term_AlteraCor(TERM_COR_PRETO, TERM_COR_BRANCO);
+        Term_EscrevaFmt0(msg);
+        Term_EscrevaC('\'');
+        Term_EscrevaConst(constAdicional, constAdicionalTam);
+        Term_EscrevaC('\'');
+        Term_EscrevaC('\n');
+        Term_AlteraCor(cor_fundo, cor_frente);
+    }
+}
+
 void Mensagem(SByte_t * modulo, SByte_t * msg, Tam_t valor0)
 {
     Byte_t cor_frente;
@@ -215,7 +235,11 @@ void Inicio()
     Multitarefa();
     Multitarefa_Habilita();
 
+    // Dispositivos
     ATA();
+
+    // Sistemas de arquivos
+    SisArq();
 
     Comando_ProcessarConstAuto(Multiboot_ArgsConst(),&Comando_TermSaidaTexto);
 

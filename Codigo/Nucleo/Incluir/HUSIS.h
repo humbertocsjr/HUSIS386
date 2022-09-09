@@ -15,9 +15,11 @@
     #define MSG_EXIBE_CHAMADA_IRQ 0
     #define MSG_EXIBE_REGISTRO_ISR 0
     #define MSG_EXIBE_CHAMADA_ISR 0
+    #define MSG_EXIBE_ERRO_ATA 1
 
 
 /* Principal.c */
+    extern void MensagemConst(SByte_t * modulo, SByte_t * msg, SByte_t * constAdicional, Tam_t constAdicionalTam);
     extern void Mensagem(SByte_t * modulo, SByte_t * msg, Tam_t valor0);
     extern void Mensagem2(SByte_t * modulo, SByte_t * msg, Tam_t valor0, Tam_t valor1);
     extern void Mensagem3(SByte_t * modulo, SByte_t * msg, Tam_t valor0, Tam_t valor1, Tam_t valor2);
@@ -154,6 +156,7 @@
     extern Tam_t Const_TamLimitado(SByte_t * constanteTexto, Tam_t capacidade);
     extern Boleano_t Const_Igual(SByte_t * destino, SByte_t * origem, Tam_t tam);
     extern void Const_Copia(SByte_t * destino, SByte_t * origem, Tam_t tam);
+    extern Status_t Const_ParaNumero(SByte_t * origem, Tam_t tam, UInt_t * valor);
     extern Status_t Const_DeNumero(SByte_t * destino, UInt_t valor, Tam_t tam);
 
 /* Caract.c */
@@ -244,12 +247,18 @@
 
 /* Unidade.c */
     extern void Unidade();
+    extern Status_t Unidade_Monta(SByte_t * constSisArq, Tam_t constSisArqTam, SByte_t * constUnidade, Tam_t constUnidadeTam);
+    extern Status_t Unidade_Formata(SByte_t * constSisArq, Tam_t constSisArqTam, SByte_t * constUnidade, Tam_t constUnidadeTam);
+    extern Status_t Unidade_LeiaNomeConst(Pos_t unidade, SByte_t * destino, Tam_t tam);
+    extern Status_t Unidade_EscrevaNomeConst(Pos_t unidade, SByte_t * origem, Tam_t tam);
+    extern Tam_t Unidade_Quantidade();
     extern Status_t Unidade_Registra(SByte_t * constanteNome, Pos_t * unidade, Pos_t dispositivo);
     extern Status_t Unidade_Desregistra(Pos_t unidade);
-    extern Status_t Unidade_RegistraSisArq(SByte_t * constanteNome, Pos_t * sisArq, Status_t (*acaoMonta)(Pos_t unidade), Status_t (*acaoValida)(Pos_t unidade));
+    extern Status_t Unidade_RegistraSisArq(SByte_t * constanteNome, Pos_t * sisArq, Status_t (*acaoMonta)(Pos_t unidade), Status_t (*acaoValida)(Pos_t unidade), Status_t (*acaoFormata)(Pos_t unidade));
     extern Status_t Unidade_DesregistraSisArq(Pos_t sisArq);
     extern Status_t Unidade_Dispositivo(Pos_t unidade, Pos_t * dispositivo);
     extern Status_t Unidade_Raiz(Pos_t unidade, Item_t * * item);
+    extern Status_t Unidade_LeiaTamanhoDeUmBloco(Pos_t unidade, Tam_t * tam);
     extern Status_t Unidade_RegistraMontagem
     (
         Pos_t unidade, 
@@ -279,12 +288,21 @@
     extern Status_t Item_AbreConst(SByte_t * constanteEndereco, Tam_t tam, Item_t * * item);
 
 /* Dispositivo.c */
-    extern Status_t Dispositivo_Registra(Pos_t * novoDispositivo, Pos_t dispositivoAcima, SByte_t * constanteNome, Boleano_t adicionaNumero, UInt_t dispNumero, UInt_t id, Tam_t blocoTam, Tam_t (*acaoLeia)(void * disp, Pos_t posicao, Byte_t * destino, Tam_t tam), Tam_t (*acaoEscreva)(void * disp, Pos_t posicao, Byte_t * origem, Tam_t tam));
+    extern Status_t Dispositivo_Registra(Pos_t * novoDispositivo, Pos_t dispositivoAcima, SByte_t * constanteNome, Boleano_t adicionaNumero, UInt_t dispNumero, UInt_t id, Tam_t blocoTam, Tam_t tamanho, Tam_t (*acaoLeia)(Dispositivo_t * disp, Pos_t posicao, Byte_t * destino, Tam_t tam), Tam_t (*acaoEscreva)(Dispositivo_t * disp, Pos_t posicao, Byte_t * origem, Tam_t tam));
     extern Status_t Dispositivo_DefinePorta(Pos_t dispositivo, Pos_t aux, UShort_t porta);
     extern Status_t Dispositivo_LeiaBytePorta(Pos_t dispositivo, Pos_t aux, Byte_t * valor);
     extern Status_t Dispositivo_EscrevaBytePorta(Pos_t dispositivo, Pos_t aux, Byte_t valor);
     extern Status_t Dispositivo_LeiaUShortPorta(Pos_t dispositivo, Pos_t aux, UShort_t * valor);
     extern Status_t Dispositivo_EscrevaUShortPorta(Pos_t dispositivo, Pos_t aux, UShort_t valor);
+    extern Status_t Dispositivo_LeiaInfo(Pos_t dispositivo, Pos_t posicao, UInt_t * valor);
+    extern Status_t Dispositivo_DefineInfo(Pos_t dispositivo, Pos_t posicao, UInt_t valor);
+    extern Status_t Dispositivo_LeiaId(Pos_t dispositivo, Pos_t * id);
+    extern Status_t Dispositivo_DefineTamanhoDeUmBloco(Pos_t dispositivo, Tam_t tam);
+    extern Status_t Dispositivo_LeiaTamanhoDeUmBloco(Pos_t dispositivo, Tam_t * tam);
+    extern Status_t Dispositivo_DefineTamanho(Pos_t dispositivo, Tam_t tam);
+    extern Status_t Dispositivo_LeiaTamanho(Pos_t dispositivo, Tam_t * tam);
+    extern Tam_t Dispositivo_Leia(Pos_t dispositivo, Pos_t posicao, Byte_t * destino, Tam_t tam);
+    extern Tam_t Dispositivo_Escreva(Pos_t dispositivo, Pos_t posicao, Byte_t * origem, Tam_t tam);
     extern void Dispositivo();
 
 /* ATA.c */

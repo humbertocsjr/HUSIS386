@@ -11,6 +11,7 @@ typedef struct
     SByte_t NomeConst[SISTEMA_DE_ARQUIVOS_NOME_TAM];
     Status_t (*AcaoValida)(Pos_t unidade);
     Status_t (*AcaoMonta)(Pos_t unidade);
+    Status_t (*AcaoFormata)(Pos_t unidade);
 } SistemaDeArquivos_t;
 
 #define UNIDADE_NOME_TAM 64
@@ -81,7 +82,7 @@ Status_t Unidade_Desregistra(Pos_t unidade)
     return ret;
 }
 
-Status_t Unidade_RegistraSisArq(SByte_t * constanteNome, Pos_t * sisArq, Status_t (*acaoMonta)(Pos_t unidade), Status_t (*acaoValida)(Pos_t unidade))
+Status_t Unidade_RegistraSisArq(SByte_t * constanteNome, Pos_t * sisArq, Status_t (*acaoMonta)(Pos_t unidade), Status_t (*acaoValida)(Pos_t unidade), Status_t (*acaoFormata)(Pos_t unidade))
 {
     SistemaDeArquivos_t * ret = 0;
     for (Pos_t i = 0; i < SISTEMA_DE_ARQUIVOS_CAPACIDADE; i++)
@@ -92,9 +93,10 @@ Status_t Unidade_RegistraSisArq(SByte_t * constanteNome, Pos_t * sisArq, Status_
         }
     }
     if(ret == 0) return STATUS_ESTOURO_DA_CAPACIDADE;
-    Mem_CopiaBinario((Byte_t *)constanteNome, (Byte_t *)ret->NomeConst, SISTEMA_DE_ARQUIVOS_NOME_TAM);
+    Mem_CopiaBinario((Byte_t *)ret->NomeConst, (Byte_t *)constanteNome, SISTEMA_DE_ARQUIVOS_NOME_TAM);
     ret->AcaoMonta = acaoMonta;
     ret->AcaoValida = acaoValida;
+    ret->AcaoFormata = acaoFormata;
     ret->Existe = SIM;
     *sisArq = ret->SistemaDeArquivos;
     return STATUS_OK;
@@ -400,8 +402,123 @@ Status_t Item_AbreConst(SByte_t * constanteEndereco, Tam_t tam, Item_t * * item)
             }
         }
     }
+    if(unidade == 0) return STATUS_NAO_ENCONTRADO;
     *item = atual;
     return ret;
+}
+
+Tam_t Unidade_Quantidade()
+{
+    Tam_t ret = 0;
+    for (Pos_t i = 0; i < UNIDADE_CAPACIDADE; i++)
+    {
+        if(_Unidade_Lista[i].Existe) ret = i + 1;
+    }
+    return ret;
+}
+
+Status_t Unidade_LeiaNomeConst(Pos_t unidade, SByte_t * destino, Tam_t tam)
+{
+    if(unidade >= UNIDADE_CAPACIDADE) return STATUS_POSICAO_INVALIDA;
+    Mem_RepeteByte((Byte_t *)destino, 0, tam);
+    Const_Copia(destino, _Unidade_Lista[unidade].NomeConst, tam > UNIDADE_NOME_TAM ? UNIDADE_NOME_TAM : tam);
+    return STATUS_OK;
+}
+
+Status_t Unidade_EscrevaNomeConst(Pos_t unidade, SByte_t * origem, Tam_t tam)
+{
+    if(unidade >= UNIDADE_CAPACIDADE) return STATUS_POSICAO_INVALIDA;
+    Mem_RepeteByte((Byte_t *)_Unidade_Lista[unidade].NomeConst, 0, UNIDADE_NOME_TAM);
+    Const_Copia(_Unidade_Lista[unidade].NomeConst, origem, tam > UNIDADE_NOME_TAM ? UNIDADE_NOME_TAM : tam);
+    return STATUS_OK;
+}
+
+Status_t Unidade_LeiaTamanhoDeUmBloco(Pos_t unidade, Tam_t * tam)
+{
+    if(unidade >= UNIDADE_CAPACIDADE) return STATUS_POSICAO_INVALIDA;
+    if(_Unidade_Lista[unidade].Dispositivo == 0) return STATUS_DISPOSITIVO_INVALIDO;
+    return Dispositivo_LeiaTamanhoDeUmBloco(_Unidade_Lista[unidade].Dispositivo, tam);
+}
+
+Status_t Unidade_Monta(SByte_t * constSisArq, Tam_t constSisArqTam, SByte_t * constUnidade, Tam_t constUnidadeTam)
+{
+    Status_t ret = STATUS_OK;
+    Boleano_t encontrado = NAO;
+    SistemaDeArquivos_t * sisArq = 0;
+    Unidade_t * unidade = 0;
+    for (Pos_t i = 0; i < SISTEMA_DE_ARQUIVOS_CAPACIDADE; i++)
+    {
+        if(_Unidade_SisArq[i].Existe)
+        {
+            if((Const_TamLimitado(_Unidade_SisArq[i].NomeConst, SISTEMA_DE_ARQUIVOS_NOME_TAM) == constSisArqTam) && Const_Igual(_Unidade_SisArq[i].NomeConst, constSisArq, constSisArqTam))
+            {
+                encontrado = SIM;
+                sisArq = &_Unidade_SisArq[i];
+                break;
+            }
+        }
+    }
+    if(!encontrado) return STATUS_SISARQ_INVALIDO;
+    encontrado = NAO;
+    for (Pos_t i = 0; i < UNIDADE_CAPACIDADE; i++)
+    {
+        if(_Unidade_Lista[i].Existe & (!_Unidade_Lista[i].Montado))
+        {
+            if((Const_TamLimitado(_Unidade_Lista[i].NomeConst, UNIDADE_NOME_TAM) == constUnidadeTam) && Const_Igual(_Unidade_Lista[i].NomeConst, constUnidade, constUnidadeTam))
+            {
+                encontrado = SIM;
+                unidade = &_Unidade_Lista[i];
+                break;
+            }
+        }
+    }
+    if(!encontrado) return STATUS_UNIDADE_INVALIDA;
+    ret = sisArq->AcaoValida(unidade->Unidade);
+    if(ret != STATUS_OK) return ret;
+    return sisArq->AcaoMonta(unidade->Unidade);
+}
+
+Status_t Unidade_Formata(SByte_t * constSisArq, Tam_t constSisArqTam, SByte_t * constUnidade, Tam_t constUnidadeTam)
+{
+    Boleano_t encontrado = NAO;
+    SistemaDeArquivos_t * sisArq = 0;
+    Unidade_t * unidade = 0;
+    for (Pos_t i = 0; i < SISTEMA_DE_ARQUIVOS_CAPACIDADE; i++)
+    {
+        if(_Unidade_SisArq[i].Existe)
+        {
+            if((Const_TamLimitado(_Unidade_SisArq[i].NomeConst, SISTEMA_DE_ARQUIVOS_NOME_TAM) == constSisArqTam) && Const_Igual(_Unidade_SisArq[i].NomeConst, constSisArq, constSisArqTam))
+            {
+                encontrado = SIM;
+                sisArq = &_Unidade_SisArq[i];
+                break;
+            }
+        }
+    }
+    if(!encontrado)
+    {
+        MensagemConst("Unidade", "Nao foi possivel formatar. Sistema de arquivos nao encontrado: ", constSisArq, constSisArqTam); 
+        return STATUS_SISARQ_INVALIDO;
+    }
+    encontrado = NAO;
+    for (Pos_t i = 0; i < UNIDADE_CAPACIDADE; i++)
+    {
+        if(_Unidade_Lista[i].Existe & (!_Unidade_Lista[i].Montado))
+        {
+            if((Const_TamLimitado(_Unidade_Lista[i].NomeConst, UNIDADE_NOME_TAM) == constUnidadeTam) && Const_Igual(_Unidade_Lista[i].NomeConst, constUnidade, constUnidadeTam))
+            {
+                encontrado = SIM;
+                unidade = &_Unidade_Lista[i];
+                break;
+            }
+        }
+    }
+    if(!encontrado)
+    {
+        MensagemConst("Unidade", "Nao foi possivel formatar. Unidade nao encontrada: ", constUnidade, constUnidadeTam); 
+        return STATUS_UNIDADE_INVALIDA;
+    }
+    return sisArq->AcaoFormata(unidade->Unidade);
 }
 
 void Unidade()

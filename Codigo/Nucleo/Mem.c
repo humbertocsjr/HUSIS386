@@ -146,7 +146,7 @@ Byte_t * Mem_Local_AlocaAlinhado(Tam_t tam)
 
 Tam_t Mem_Local_Tam(Byte_t * endereco)
 {
-    Pos_t posicao = (Pos_t)endereco / 256 - (Pos_t)_Mem_Local_Inicio;
+    Pos_t posicao = ((Pos_t)endereco - (Pos_t)_Mem_Local_Inicio) / 256;
     Pos_t anterior = _Mem_Local[posicao].Posicao;
     for (Pos_t i = posicao + 1; i < _Mem_Local_Tam; i++)
     {
@@ -173,7 +173,7 @@ Tam_t Mem_Local_Capacidade()
 
 Status_t Mem_Local_Libera(Byte_t * endereco)
 {
-    Pos_t posicao = (Pos_t)endereco / 256 - (Pos_t)_Mem_Local_Inicio;
+    Pos_t posicao = ((Pos_t)endereco - (Pos_t)_Mem_Local_Inicio) / 256;
     if(_Mem_Local[posicao].Ocupado & (_Mem_Local[posicao].Posicao == 0))
     {
         _Mem_Local[posicao].Ocupado = NAO;
