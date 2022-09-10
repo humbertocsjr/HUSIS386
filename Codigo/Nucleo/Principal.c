@@ -241,6 +241,26 @@ void Inicio()
     // Sistemas de arquivos
     SisArq();
 
+    /*
+    
+    COMO IMPLEMENTAR MULTITAREFA NO FUTURO
+
+     - Implementar envio de mensagens entre processos
+     - Todo programa (incluindo o nucleo), rodara um loop infinito recebendo mensagens e tratando-as
+     - Essas mensagens podem, por exemplo, conter uma requisicao de abertura de arquivo para o nucleo
+     - O nucleo vai ler a mensagem, chamar a rotina de abertura de arquivo e responder a mensagem 
+     - O programa solicitante fica suspenso aguardando a resposta
+     - Quando a resposta vier a multitarefa reativa a tarefa para que ela possa ler a resposta
+
+    Fazendo dessa forma simplifica e deita todos os processos monotarefas, evitando reentrada e corrupcao de dados
+
+
+    Implementar um ultimo comando "inicial", que executa um aplicativo e inicia o loop de mensagens do nucleo
+    
+    
+    
+    */
+
     Comando_ProcessarConstAuto(Multiboot_ArgsConst(),&Comando_TermSaidaTexto);
 
     Comando_Term();

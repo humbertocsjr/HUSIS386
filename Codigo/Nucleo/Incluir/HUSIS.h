@@ -5,6 +5,10 @@
 #include <Tecla.h>
 
 /* Configuracoes Gerais */
+    #define ARMAZENAMENTO_ATA
+    #define SISARQ_HARQ
+
+
     #define MSG_ESCREVE_NO_TERM -1
     #define MSG_EXIBE_TECLA_DESCONHECIDA 0
     #define MSG_EXIBE_MAPA_IDT 0
@@ -247,6 +251,8 @@
 
 /* Unidade.c */
     extern void Unidade();
+    extern Status_t Unidade_LeiaPrincipal(Pos_t * unidade);
+    extern Status_t Unidade_DefinePrincipal(Pos_t unidade);
     extern Status_t Unidade_Monta(SByte_t * constSisArq, Tam_t constSisArqTam, SByte_t * constUnidade, Tam_t constUnidadeTam);
     extern Status_t Unidade_Formata(SByte_t * constSisArq, Tam_t constSisArqTam, SByte_t * constUnidade, Tam_t constUnidadeTam);
     extern Status_t Unidade_LeiaNomeConst(Pos_t unidade, SByte_t * destino, Tam_t tam);
@@ -259,9 +265,11 @@
     extern Status_t Unidade_Dispositivo(Pos_t unidade, Pos_t * dispositivo);
     extern Status_t Unidade_Raiz(Pos_t unidade, Item_t * * item);
     extern Status_t Unidade_LeiaTamanhoDeUmBloco(Pos_t unidade, Tam_t * tam);
+    extern Status_t Unidade_CarregaObjetoMontado(Pos_t unidade, Byte_t * * objetoMontado);
     extern Status_t Unidade_RegistraMontagem
     (
         Pos_t unidade, 
+        Tam_t tamanhoObjetoMontado,
         Status_t (*acaoRaiz)(Pos_t unidade, Item_t * * raiz),
         Status_t (*acaoDesmonta)(Pos_t unidade),
         Status_t (*acaoItemSubItem)(Item_t * item, Pos_t posicao, Item_t * * subItem),
@@ -286,6 +294,7 @@
     extern Status_t Item_CriaDiretorio(Item_t * item, SByte_t * constanteNome);
     extern Status_t Item_CriaArquivo(Item_t * item, SByte_t * constanteNome);
     extern Status_t Item_AbreConst(SByte_t * constanteEndereco, Tam_t tam, Item_t * * item);
+    extern Status_t Item_CriaArquivoConst(SByte_t * constanteEndereco, Tam_t tam);
 
 /* Dispositivo.c */
     extern Status_t Dispositivo_Registra(Pos_t * novoDispositivo, Pos_t dispositivoAcima, SByte_t * constanteNome, Boleano_t adicionaNumero, UInt_t dispNumero, UInt_t id, Tam_t blocoTam, Tam_t tamanho, Tam_t (*acaoLeia)(Dispositivo_t * disp, Pos_t posicao, Byte_t * destino, Tam_t tam), Tam_t (*acaoEscreva)(Dispositivo_t * disp, Pos_t posicao, Byte_t * origem, Tam_t tam));

@@ -24,6 +24,7 @@ typedef struct
     Boleano_t Existe;
     Boleano_t Montado;
     SByte_t NomeConst[UNIDADE_NOME_TAM];
+    Byte_t * ObjetoMontado;
     Status_t (*AcaoRaiz)(Pos_t unidade, Item_t * * raiz);
     Status_t (*AcaoDesmonta)(Pos_t unidade);
     Status_t (*AcaoItemSubItem)(Item_t * item, Pos_t posicao, Item_t * * subItem);
@@ -40,10 +41,27 @@ typedef struct
 #define UNIDADE_CAPACIDADE 64
 
 Unidade_t _Unidade_Lista[UNIDADE_CAPACIDADE];
+Unidade_t * _Unidade_Principal = 0;
 
 #define SISTEMA_DE_ARQUIVOS_CAPACIDADE 32
 
 SistemaDeArquivos_t _Unidade_SisArq[SISTEMA_DE_ARQUIVOS_CAPACIDADE];
+
+
+Status_t Unidade_DefinePrincipal(Pos_t unidade)
+{
+    if(unidade >= UNIDADE_CAPACIDADE) return STATUS_POSICAO_INVALIDA;
+    if((!_Unidade_Lista[unidade].Montado) | (!_Unidade_Lista[unidade].Existe)) return STATUS_UNIDADE_INVALIDA;
+    _Unidade_Principal = &_Unidade_Lista[unidade];
+    return STATUS_OK;
+}
+
+Status_t Unidade_LeiaPrincipal(Pos_t * unidade)
+{
+    if(_Unidade_Principal == 0) return STATUS_NAO_ENCONTRADO;
+    *unidade = _Unidade_Principal->Unidade;
+    return STATUS_OK;
+}
 
 Status_t Unidade_Registra(SByte_t * constanteNome, Pos_t * unidade, Pos_t dispositivo)
 {
@@ -73,6 +91,7 @@ Status_t Unidade_Desregistra(Pos_t unidade)
     if(_Unidade_Lista[unidade].Montado)
     {
         ret = _Unidade_Lista[unidade].AcaoDesmonta(unidade);
+        if(_Unidade_Lista[unidade].ObjetoMontado != 0) Mem_Local_Libera(_Unidade_Lista[unidade].ObjetoMontado);
     }
     if(ret == STATUS_OK)
     {
@@ -172,6 +191,7 @@ Status_t _Item_ValidacaoDiretorio(Item_t * item)
 Status_t Unidade_RegistraMontagem
 (
     Pos_t unidade, 
+    Tam_t tamanhoObjetoMontado,
     Status_t (*acaoRaiz)(Pos_t unidade, Item_t * * raiz),
     Status_t (*acaoDesmonta)(Pos_t unidade),
     Status_t (*acaoItemSubItem)(Item_t * item, Pos_t posicao, Item_t * * subItem),
@@ -201,6 +221,14 @@ Status_t Unidade_RegistraMontagem
     u->AcaoItemFecha = acaoItemFecha;
     u->AcaoItemCriaDiretorio = acaoItemCriaDiretorio;
     u->AcaoItemCriaArquivo = acaoItemCriaArquivo;
+    if(tamanhoObjetoMontado > 0)
+    {
+        u->ObjetoMontado = Mem_Local_Aloca(tamanhoObjetoMontado);
+    }
+    else
+    {
+        u->ObjetoMontado = 0;
+    }
     u->Montado = SIM;
     return ret;
 }
@@ -304,13 +332,18 @@ Status_t Item_AbreConst(SByte_t * constanteEndereco, Tam_t tam, Item_t * * item)
     Pos_t unidadeInicio = 0;
     Pos_t unidadeFim = 0;
     Tam_t unidadeTam = 0;
-    Unidade_t * unidade = 0;
+    Unidade_t * unidade = _Unidade_Principal;
     Item_t * atual = 0;
     Item_t * proximo = 0;
     Pos_t atualInicio = 0;
     Pos_t atualFim = 0;
     Tam_t atualTam = 0;
     Tam_t qtd = 0;
+    if(unidade != 0)
+    {
+        ret = Unidade_Raiz(unidade->Unidade, &atual);
+        if(ret != STATUS_OK) return ret;
+    }
     for (Pos_t i = 0; i < fim; i++)
     {
         switch (etapa)
@@ -348,6 +381,7 @@ Status_t Item_AbreConst(SByte_t * constanteEndereco, Tam_t tam, Item_t * * item)
                             {
                                 if(Const_Igual(constanteEndereco + unidadeInicio, _Unidade_Lista[i].NomeConst, unidadeTam))
                                 {
+                                    if(atual != 0) Item_Fecha(atual);
                                     unidade = &_Unidade_Lista[i];
                                     ret = Unidade_Raiz(i, &atual);
                                     if(ret != STATUS_OK) return ret;
@@ -519,6 +553,140 @@ Status_t Unidade_Formata(SByte_t * constSisArq, Tam_t constSisArqTam, SByte_t * 
         return STATUS_UNIDADE_INVALIDA;
     }
     return sisArq->AcaoFormata(unidade->Unidade);
+}
+
+Status_t Unidade_CarregaObjetoMontado(Pos_t unidade, Byte_t * * objetoMontado)
+{
+    if(unidade >= UNIDADE_CAPACIDADE) return STATUS_POSICAO_INVALIDA;
+    if((!_Unidade_Lista[unidade].Montado) | (!_Unidade_Lista[unidade].Existe)) return STATUS_UNIDADE_INVALIDA;
+    if(_Unidade_Lista[unidade].ObjetoMontado == 0) return STATUS_ESTOURO_DA_CAPACIDADE;
+    *objetoMontado = _Unidade_Lista[unidade].ObjetoMontado;
+    return STATUS_OK;
+}
+
+
+
+Status_t Item_CriaArquivoConst(SByte_t * constanteEndereco, Tam_t tam)
+{
+    Status_t ret = STATUS_OK;
+    Tam_t fim = Const_TamLimitado(constanteEndereco, tam);
+    Pos_t etapa = 0;
+    Pos_t unidadeInicio = 0;
+    Pos_t unidadeFim = 0;
+    Tam_t unidadeTam = 0;
+    SByte_t nome[ITEM_NOME_TAM + 1];
+    nome[ITEM_NOME_TAM] = 0;
+    Unidade_t * unidade = _Unidade_Principal;
+    Item_t * atual = 0;
+    Item_t * proximo = 0;
+    Pos_t atualInicio = 0;
+    Pos_t atualFim = 0;
+    Tam_t atualTam = 0;
+    Tam_t qtd = 0;
+    if(unidade != 0)
+    {
+        ret = Unidade_Raiz(unidade->Unidade, &atual);
+        if(ret != STATUS_OK) return ret;
+    }
+    for (Pos_t i = 0; i < fim; i++)
+    {
+        switch (etapa)
+        {
+            case 0:
+            {
+                if(constanteEndereco[i] == '[')
+                {
+                    etapa = 1;
+                    unidadeInicio = i+1;
+                }
+                else if(constanteEndereco[i] == '/')
+                {
+                    etapa = 2;
+                    atualInicio = i+1;
+                }
+                else if(constanteEndereco[i] != ' ')
+                {
+                    return STATUS_FORMATO_INVALIDO;
+                }
+                break;
+            }
+            case 1:
+            {
+                if(constanteEndereco[i] == ']')
+                {
+                    unidadeFim = i;
+                    unidadeTam = unidadeFim - unidadeInicio;
+                    for (Pos_t i = 0; i < UNIDADE_CAPACIDADE; i++)
+                    {
+                        if(_Unidade_Lista[i].Existe)
+                        {
+                            Tam_t unidadeNomeTam = Const_TamLimitado(_Unidade_Lista[i].NomeConst, UNIDADE_NOME_TAM);
+                            if(unidadeNomeTam == unidadeTam)
+                            {
+                                if(Const_Igual(constanteEndereco + unidadeInicio, _Unidade_Lista[i].NomeConst, unidadeTam))
+                                {
+                                    if(atual != 0) Item_Fecha(atual);
+                                    unidade = &_Unidade_Lista[i];
+                                    ret = Unidade_Raiz(i, &atual);
+                                    if(ret != STATUS_OK) return ret;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if(unidade == 0) return STATUS_UNIDADE_INVALIDA;
+                    etapa = 0;
+                }
+                break;
+            }
+            case 2:
+            {
+                if((constanteEndereco[i] == '/') | ((i+1) >= fim))
+                {
+                    proximo = 0;
+                    atualFim = i;
+                    if(((i+1) >= fim)) atualFim++;
+                    atualTam = atualFim - atualInicio;
+                    ret = Item_QtdSubItens(atual, &qtd);
+                    if(ret != STATUS_OK) return ret;
+                    for (Pos_t i = 0; i < qtd; i++)
+                    {
+                        ret = Item_SubItem(atual, i, &proximo);
+                        if(ret != STATUS_OK) return ret;
+                        if(atualTam == Const_TamLimitado(proximo->Nome, ITEM_NOME_TAM))
+                        {
+                            if(Const_Igual(constanteEndereco + atualInicio, proximo->Nome, atualTam))
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                Item_Fecha(proximo);
+                                proximo = 0;
+                            }
+                        }
+                        else
+                        {
+                            Item_Fecha(proximo);
+                            proximo = 0;
+                        }
+                    }
+                    if(proximo == 0)
+                    {
+                        Const_Copia(nome, constanteEndereco + atualInicio, atualTam);
+                        ret = Item_CriaArquivo(atual, nome);
+                        Item_Fecha(atual);
+                        return ret;
+                    }
+                    Item_Fecha(atual);
+                    atual = proximo;
+
+                }
+                break;
+            }
+        }
+    }
+    return STATUS_NAO_ENCONTRADO;
 }
 
 void Unidade()

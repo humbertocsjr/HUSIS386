@@ -1,8 +1,8 @@
 #include <HUSIS.h>
 
-#define SISARQ_HARQ
-
+#ifdef SISARQ_HARQ
 #include "SisArq/HARQ.c"
+#endif
 
 void SisArq()
 {

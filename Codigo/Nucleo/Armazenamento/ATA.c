@@ -225,7 +225,7 @@ Tam_t _ATA_Escreva(Dispositivo_t * dispositivo, Pos_t posicao, Byte_t * origem, 
     {
         Cronometro_Espera(1);
         Dispositivo_LeiaBytePorta(disp, ATA_PORTA_E__STATUS, &status);
-        if((!(status & ATA_MASCARA_STATUS_OCUPADO)))
+        if((!(status & ATA_MASCARA_STATUS_OCUPADO)) & (!(status & ATA_MASCARA_STATUS_ERRO)))
         {
             ok = SIM;
             break;

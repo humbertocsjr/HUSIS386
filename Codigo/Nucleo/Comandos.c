@@ -494,6 +494,8 @@ Status_t _Comando_CmdUnidades(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(
 {
     SByte_t nome[65];
     nome[64] = 0;
+    Pos_t principal = 0;
+    Status_t principalStatus = Unidade_LeiaPrincipal(&principal); 
     Pos_t qtd = Unidade_Quantidade();
     saidaTexto("Unidades:\n\n", 0);
     for (Pos_t i = 0; i < qtd; i++)
@@ -501,7 +503,11 @@ Status_t _Comando_CmdUnidades(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(
         Unidade_LeiaNomeConst(i, nome, 64);
         if(Const_TamLimitado(nome,64) != 0)
         {
-            if(Const_Igual(nome, "#", 64))
+            if((principalStatus == STATUS_OK) & (principal == i))
+            {
+                saidaTexto(" [{0:C}] Unidade principal\n", (Tam_t)nome);
+            }
+            else if(Const_Igual(nome, "#", 64))
             {
                 saidaTexto(" [{0:C}] Unidade especial que contem os dispositivos\n", (Tam_t)nome);
             }
@@ -653,6 +659,26 @@ Status_t _Comando_CmdMonta(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SBy
             saidaTexto("Montado com sucesso", 0);
             break;
         }
+        case STATUS_SISARQ_INVALIDO:
+        {
+            saidaTexto("Sistema de arquivos invalido", 0);
+            break;
+        }
+        case STATUS_UNIDADE_INVALIDA:
+        {
+            saidaTexto("Unidade invalida", 0);
+            break;
+        }
+        case STATUS_FORMATO_INVALIDO:
+        {
+            saidaTexto("Formatacao incompativel, verifique o sistema de arquivos", 0);
+            break;
+        }
+        case STATUS_NAO_IMPLEMENTADO:
+        {
+            saidaTexto("Funcao nao implementada neste sistema de arquivos", 0);
+            break;
+        }
         default:
         {
             saidaTexto("Erro: {0:u}", ret);
@@ -681,6 +707,87 @@ Status_t _Comando_CmdFormata(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(S
         case STATUS_OK:
         {
             saidaTexto("Formatado com sucesso", 0);
+            break;
+        }
+        case STATUS_SISARQ_INVALIDO:
+        {
+            saidaTexto("Sistema de arquivos invalido", 0);
+            break;
+        }
+        case STATUS_UNIDADE_INVALIDA:
+        {
+            saidaTexto("Unidade invalida", 0);
+            break;
+        }
+        case STATUS_FORMATO_INVALIDO:
+        {
+            saidaTexto("Formatacao incompativel, verifique o sistema de arquivos", 0);
+            break;
+        }
+        case STATUS_NAO_IMPLEMENTADO:
+        {
+            saidaTexto("Funcao nao implementada neste sistema de arquivos", 0);
+            break;
+        }
+        default:
+        {
+            saidaTexto("Erro: {0:u}", ret);
+            break;
+        }
+    }
+    return ret;
+}
+
+Status_t _Comando_CmdPrincipal(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SByte_t * constanteTexto, Tam_t valor0))
+{
+    SByte_t nome[65];
+    nome[64] = 0;
+    Pos_t qtd = Unidade_Quantidade();
+    for (Pos_t i = 0; i < qtd; i++)
+    {
+        Unidade_LeiaNomeConst(i, nome, 64);
+        if((Const_TamLimitado(nome,64) == argsTam) && Const_Igual(nome, args, argsTam))
+        {
+            saidaTexto("Alterado para [{0:C}]\n", (Tam_t)nome);
+            return Unidade_DefinePrincipal(i);
+        }
+    }
+    saidaTexto("Nao encontrado [{0:C}]\n", (Tam_t)nome);
+    return STATUS_NAO_ENCONTRADO;
+}
+
+Status_t _Comando_CmdMontaP(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SByte_t * constanteTexto, Tam_t valor0))
+{
+    Pos_t arg1 = _Comando_IgnoraEspacosConst(args, 0, argsTam);
+    Pos_t arg1Fim = _Comando_BuscaEspacosConst(args, arg1, argsTam);
+    Pos_t arg2 = _Comando_IgnoraEspacosConst(args, arg1Fim, argsTam);
+    Pos_t arg2Fim = argsTam;
+    Pos_t arg2Tam = arg2Fim - arg2;
+    if((arg1 == arg1Fim) |(arg2 == arg2Fim))
+    {
+        saidaTexto("Uso: montap [Sistema de Arquivos] [Unidade]", 0);
+        return STATUS_FORMATO_INVALIDO;
+    }
+    Status_t ret = _Comando_CmdMonta(args, argsTam, saidaTexto);
+    if(ret != STATUS_OK) return ret;
+    saidaTexto("\n",0);
+    ret = _Comando_CmdPrincipal(args + arg2, arg2Tam, saidaTexto);
+    return ret;
+}
+
+Status_t _Comando_CmdCriaArq(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SByte_t * constanteTexto, Tam_t valor0))
+{
+    if(argsTam == 0)
+    {
+        saidaTexto("Informe o nome do arquivo com endereço completo",0);
+        return STATUS_FORMATO_INVALIDO;
+    }
+    Status_t ret = Item_CriaArquivoConst(args, argsTam);
+    switch (ret)
+    {
+        case STATUS_OK:
+        {
+            saidaTexto("Arquivo criado com sucesso",0);
             break;
         }
         default:
@@ -713,5 +820,8 @@ void Comando()
     Comando_RegistraConst("unidades", "Lista as unidades existentes", &_Comando_CmdUnidades);
     Comando_RegistraConst("bloco", "Exibe um bloco", &_Comando_CmdBloco);
     Comando_RegistraConst("monta", "Monta uma unidade", &_Comando_CmdMonta);
+    Comando_RegistraConst("montap", "Monta uma unidade como principal", &_Comando_CmdMontaP);
     Comando_RegistraConst("formata", "Formata uma unidade", &_Comando_CmdFormata);
+    Comando_RegistraConst("principal", "Altera a unidade principal", &_Comando_CmdPrincipal);
+    Comando_RegistraConst("criaarq", "Cria um arquivo", &_Comando_CmdCriaArq);
 }

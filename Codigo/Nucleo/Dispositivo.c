@@ -110,7 +110,7 @@ Status_t Dispositivo_EscrevaUShortPorta(Pos_t dispositivo, Pos_t aux, UShort_t v
 Status_t _Dispositivo_Raiz(Pos_t unidade, Item_t * * raiz)
 {
     *raiz = (Item_t *)Mem_Local_Aloca(sizeof(Item_t));
-    Const_Copia((*raiz)->Nome, "Raiz", ITEM_NOME_TAM);
+    Unidade_LeiaNomeConst(unidade, (*raiz)->Nome, ITEM_NOME_TAM);
     (*raiz)->Identificador = 0;
     (*raiz)->PosicaoEspecial = 0;
     (*raiz)->Especial = ITEM_ESPECIAL_DISPOSITIVO;
@@ -299,5 +299,5 @@ void Dispositivo()
     Dispositivo_Registra(&raiz, 0, "Raiz", NAO, 0, 0, 0, 0, 0, 0);
     Pos_t unidade = 0;
     Unidade_Registra("#", &unidade, 0);
-    Unidade_RegistraMontagem(unidade, &_Dispositivo_Raiz, &_Dispositivo_Desmonta, &_Dispositivo_ItemSubItem, &_Dispositivo_ItemQtdSubItem, &_Dispositivo_ItemVaPara, &_Dispositivo_ItemLeia, &_Dispositivo_ItemEscreva, &_Dispositivo_Exclui, &_Dispositivo_Fecha, &_Dispositivo_CriaDiretorio, &_Dispositivo_CriaArquivo);
+    Unidade_RegistraMontagem(unidade, 0, &_Dispositivo_Raiz, &_Dispositivo_Desmonta, &_Dispositivo_ItemSubItem, &_Dispositivo_ItemQtdSubItem, &_Dispositivo_ItemVaPara, &_Dispositivo_ItemLeia, &_Dispositivo_ItemEscreva, &_Dispositivo_Exclui, &_Dispositivo_Fecha, &_Dispositivo_CriaDiretorio, &_Dispositivo_CriaArquivo);
 }
