@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "tecla.h": "c"
+        "tecla.h": "c",
+        "husis.h": "c"
     }
 }

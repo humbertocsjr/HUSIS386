@@ -2,7 +2,7 @@ timeout 2
 default 0
 
 title HUSIS
-kernel --type=multiboot /husis  :montap HARQ ATA 0
+kernel --type=multiboot /husis  :montap HARQ16 ATA 0
 
-title HUSIS Silencioso
-kernel --type=multiboot /husis  :msg desativa:montap HARQ ATA 0
+title HUSIS Vazio
+kernel --type=multiboot /husis  

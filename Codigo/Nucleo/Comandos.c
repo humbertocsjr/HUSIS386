@@ -361,7 +361,7 @@ Status_t _Comando_CmdLista(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SBy
         }
         else
         {
-            saidaTexto(" {0:C}\n", (Tam_t)&nome);
+            saidaTexto(" {0:C} [Arquivo]\n", (Tam_t)&nome);
         }
         Item_Fecha(sub);
     }
@@ -688,6 +688,50 @@ Status_t _Comando_CmdMonta(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SBy
     return ret;
 }
 
+Status_t _Comando_CmdDesmonta(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SByte_t * constanteTexto, Tam_t valor0))
+{
+    if(argsTam == 0)
+    {
+        saidaTexto("Uso: desmonta [Unidade]", 0);
+        return STATUS_FORMATO_INVALIDO;
+    }
+    Status_t ret = Unidade_Desmonta(args, argsTam);
+    switch (ret)
+    {
+        case STATUS_OK:
+        {
+            saidaTexto("Desmontado com sucesso", 0);
+            break;
+        }
+        case STATUS_SISARQ_INVALIDO:
+        {
+            saidaTexto("Sistema de arquivos invalido", 0);
+            break;
+        }
+        case STATUS_UNIDADE_INVALIDA:
+        {
+            saidaTexto("Unidade invalida", 0);
+            break;
+        }
+        case STATUS_FORMATO_INVALIDO:
+        {
+            saidaTexto("Formatacao incompativel, verifique o sistema de arquivos", 0);
+            break;
+        }
+        case STATUS_NAO_IMPLEMENTADO:
+        {
+            saidaTexto("Funcao nao implementada neste sistema de arquivos", 0);
+            break;
+        }
+        default:
+        {
+            saidaTexto("Erro: {0:u}", ret);
+            break;
+        }
+    }
+    return ret;
+}
+
 Status_t _Comando_CmdFormata(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SByte_t * constanteTexto, Tam_t valor0))
 {
     Pos_t arg1 = _Comando_IgnoraEspacosConst(args, 0, argsTam);
@@ -799,6 +843,30 @@ Status_t _Comando_CmdCriaArq(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(S
     return ret;
 }
 
+Status_t _Comando_CmdCriaDir(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SByte_t * constanteTexto, Tam_t valor0))
+{
+    if(argsTam == 0)
+    {
+        saidaTexto("Informe o nome do diretorio com endereço completo",0);
+        return STATUS_FORMATO_INVALIDO;
+    }
+    Status_t ret = Item_CriaDiretorioConst(args, argsTam);
+    switch (ret)
+    {
+        case STATUS_OK:
+        {
+            saidaTexto("Diretorio criado com sucesso",0);
+            break;
+        }
+        default:
+        {
+            saidaTexto("Erro: {0:u}", ret);
+            break;
+        }
+    }
+    return ret;
+}
+
 void Comando()
 {
     for (Pos_t i = 0; i < COMANDO_LISTA_TAM; i++)
@@ -821,7 +889,9 @@ void Comando()
     Comando_RegistraConst("bloco", "Exibe um bloco", &_Comando_CmdBloco);
     Comando_RegistraConst("monta", "Monta uma unidade", &_Comando_CmdMonta);
     Comando_RegistraConst("montap", "Monta uma unidade como principal", &_Comando_CmdMontaP);
+    Comando_RegistraConst("desmonta", "Desmonta uma unidade", &_Comando_CmdDesmonta);
     Comando_RegistraConst("formata", "Formata uma unidade", &_Comando_CmdFormata);
     Comando_RegistraConst("principal", "Altera a unidade principal", &_Comando_CmdPrincipal);
     Comando_RegistraConst("criaarq", "Cria um arquivo", &_Comando_CmdCriaArq);
+    Comando_RegistraConst("criadir", "Cria um diretorio", &_Comando_CmdCriaDir);
 }
