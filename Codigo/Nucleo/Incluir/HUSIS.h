@@ -6,6 +6,7 @@
 
 /* Configuracoes Gerais */
     #define ARMAZENAMENTO_ATA
+    #define ARMAZENAMENTO_DISQUETE
     #define SISARQ_HARQ
 
 
@@ -316,7 +317,7 @@
     extern Tam_t Dispositivo_Escreva(Pos_t dispositivo, Pos_t posicao, Byte_t * origem, Tam_t tam);
     extern void Dispositivo();
 
-/* ATA.c */
-    extern void ATA();
+/* Armazenamento.c */
+    extern void Armazenamento();
 
 #endif

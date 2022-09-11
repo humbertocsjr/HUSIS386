@@ -1,7 +1,7 @@
 
 #include <HUSIS.h>
 
-Byte_t HARQ16_ExibeMensagensNivel = 3;
+Byte_t HARQ16_ExibeMensagensNivel = 0;
 
 #define HARQ16_INDICE_DESVIO 440
 #define HARQ16_INDICE_NOME_TAM 20

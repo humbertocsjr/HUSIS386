@@ -357,11 +357,11 @@ Status_t _Comando_CmdLista(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SBy
         Const_Copia(nome, sub->Nome, ITEM_NOME_TAM);
         if(sub->Tipo == ITEM_TIPO_DIRETORIO)
         {
-            saidaTexto(" {0:C} [Diretorio]\n", (Tam_t)&nome);
+            saidaTexto(" [DIR] {0:C}\n", (Tam_t)&nome);
         }
         else
         {
-            saidaTexto(" {0:C} [Arquivo]\n", (Tam_t)&nome);
+            saidaTexto(" [ARQ] {0:C}\n", (Tam_t)&nome);
         }
         Item_Fecha(sub);
     }

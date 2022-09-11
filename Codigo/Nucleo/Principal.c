@@ -236,7 +236,7 @@ void Inicio()
     Multitarefa_Habilita();
 
     // Dispositivos
-    ATA();
+    Armazenamento();
 
     // Sistemas de arquivos
     SisArq();
