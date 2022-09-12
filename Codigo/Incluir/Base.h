@@ -114,7 +114,14 @@
         Pos_t PosicaoEspecial;
     } Item_t;
 
-/* SisArq.c */
-    extern void SisArq();
+    typedef struct __attribute__ ((__packed__))
+    {
+        Byte_t Segundo;
+        Byte_t Minuto;
+        Byte_t Hora;
+        Byte_t Dia;
+        Byte_t Mes;
+        UShort_t Ano;
+    } DataHora_t;
 
 #endif

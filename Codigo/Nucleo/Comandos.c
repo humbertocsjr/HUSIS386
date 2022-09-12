@@ -867,6 +867,19 @@ Status_t _Comando_CmdCriaDir(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(S
     return ret;
 }
 
+Status_t _Comando_CmdRelogio(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SByte_t * constanteTexto, Tam_t valor0))
+{
+    DataHora_t dt;
+    Relogio_Leia(&dt);
+    saidaTexto((dt.Hora > 9 ? "{0:u}:" : "0{0:u}:"), dt.Hora);
+    saidaTexto((dt.Minuto > 9 ? "{0:u}:" : "0{0:u}:"), dt.Minuto);
+    saidaTexto((dt.Segundo > 9 ? "{0:u} " : "0{0:u} "), dt.Segundo);
+    saidaTexto((dt.Dia > 9 ? "{0:u}/" : "0{0:u}/"), dt.Dia);
+    saidaTexto((dt.Mes > 9 ? "{0:u}/" : "0{0:u}/"), dt.Mes);
+    saidaTexto("{0:u}" , dt.Ano);
+    return STATUS_OK;
+}
+
 void Comando()
 {
     for (Pos_t i = 0; i < COMANDO_LISTA_TAM; i++)
@@ -894,4 +907,5 @@ void Comando()
     Comando_RegistraConst("principal", "Altera a unidade principal", &_Comando_CmdPrincipal);
     Comando_RegistraConst("criaarq", "Cria um arquivo", &_Comando_CmdCriaArq);
     Comando_RegistraConst("criadir", "Cria um diretorio", &_Comando_CmdCriaDir);
+    Comando_RegistraConst("relogio", "Exibe o relogio", &_Comando_CmdRelogio);
 }

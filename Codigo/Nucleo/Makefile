@@ -25,5 +25,6 @@ all:
 	@$(CC) Temp/Unidade.o Unidade.c
 	@$(CC) Temp/Dispositivo.o Dispositivo.c
 	@$(CC) Temp/SisArq.o SisArq.c
+	@$(CC) Temp/CMOS.o CMOS.c
 	@cp Ligacao.ld Temp/Ligacao.ld
-	@cd Temp && $(LD) HUSIS Inicial.o Principal.o ES.o Mem.o Term.o Caract.o Const.o GDT.o IDT.o ISR.o IRQ.o Cronometro.o Teclado.o TecladoEnUsIntl.o Comandos.o Multiboot.o Processo.o Multitarefa.o Armazenamento.o Unidade.o Dispositivo.o SisArq.o
+	@cd Temp && $(LD) HUSIS Inicial.o Principal.o ES.o Mem.o Term.o Caract.o Const.o GDT.o IDT.o ISR.o IRQ.o Cronometro.o Teclado.o TecladoEnUsIntl.o Comandos.o Multiboot.o Processo.o Multitarefa.o Armazenamento.o Unidade.o Dispositivo.o SisArq.o CMOS.o

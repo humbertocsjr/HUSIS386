@@ -26,6 +26,12 @@
 #define DISQUETE_MASCARA_STATUS_MOVENDOC 0x04
 #define DISQUETE_MASCARA_STATUS_MOVENDOD 0x08
 
+#define DISQUETE_INFO_CILINDROS 0
+#define DISQUETE_INFO_CABECAS 1
+#define DISQUETE_INFO_SETORES 2
+#define DISQUETE_INFO_SETORES_POR_CILINDRO 3
+#define DISQUETE_INFO_TOTAL_BLOCOS 4
+
 /*
 
 Vai operar em mono PIO, lendo via IRQ6 com as seguintes etapas:
@@ -63,10 +69,63 @@ Tam_t Disquete_Escreva(Dispositivo_t *disp, Pos_t posicao, Byte_t *origem, Tam_t
     return 0;
 }
 
-Status_t Disquete_Registra(Pos_t posicao, Boleano_t micro, Pos_t * dispositivo)
+Status_t Disquete_Registra(Pos_t posicao, Byte_t tipoCMOS, Pos_t * dispositivo)
 {
     Pos_t disp = 0;
     Status_t ret = STATUS_OK;
+    Boleano_t micro;
+    Tam_t cilindros;
+    Tam_t cabecas;
+    Tam_t setores;
+    Tam_t totalBlocos;
+    switch(tipoCMOS)
+    {
+        case 1:
+        {
+            micro = NAO;
+            cilindros = 40;
+            cabecas = 2;
+            setores = 9;
+            totalBlocos = 720;
+            Mensagem("Disquete", "Encontrado MiniDisquete (5 1/4) de 360 KiB na Posicao {0:u}", posicao);
+            break;
+        }
+        case 2:
+        {
+            micro = NAO;
+            cilindros = 80;
+            cabecas = 2;
+            setores = 18;
+            totalBlocos = 2400;
+            Mensagem("Disquete", "Encontrado MiniDisquete (5 1/4) de 1200 KiB na Posicao {0:u}", posicao);
+            break;
+        }
+        case 3:
+        {
+            micro = SIM;
+            cilindros = 40;
+            cabecas = 2;
+            setores = 18;
+            totalBlocos = 1440;
+            Mensagem("Disquete", "Encontrado MiniDisquete (3 1/2) de 720 KiB na Posicao {0:u}", posicao);
+            break;
+        }
+        case 4:
+        {
+            micro = SIM;
+            cilindros = 80;
+            cabecas = 2;
+            setores = 18;
+            totalBlocos = 2880;
+            Mensagem("Disquete", "Encontrado MiniDisquete (3 1/2) de 1440 KiB na Posicao {0:u}", posicao);
+            break;
+        }
+        default:
+        {
+            *dispositivo = 0;
+            return STATUS_DISPOSITIVO_INVALIDO;
+        }
+    }
     if(micro)
     {
         ret = Dispositivo_Registra(&disp, 0, "MicroDisquete ", SIM, posicao, posicao, 512, 2880, &Disquete_Leia, &Disquete_Escreva);
@@ -88,6 +147,16 @@ Status_t Disquete_Registra(Pos_t posicao, Boleano_t micro, Pos_t * dispositivo)
     Dispositivo_DefinePorta(disp, DISQUETE_PORTA_ES_FILA_DADOS, 0x3f5);
     Dispositivo_DefinePorta(disp, DISQUETE_PORTA_E__ENTRADA_DIGITAL, 0x3f7);
     Dispositivo_DefinePorta(disp, DISQUETE_PORTA__S_CONTROLE_CONFIG, 0x3f7);
+    Dispositivo_DefineInfo(disp, DISQUETE_INFO_CILINDROS, cilindros);
+    Dispositivo_DefineInfo(disp, DISQUETE_INFO_CABECAS, cabecas);
+    Dispositivo_DefineInfo(disp, DISQUETE_INFO_SETORES, setores);
+    Dispositivo_DefineInfo(disp, DISQUETE_INFO_SETORES_POR_CILINDRO, setores * cabecas);
+    Dispositivo_DefineInfo(disp, DISQUETE_INFO_TOTAL_BLOCOS, totalBlocos);
+    Byte_t valor = 0;
+    // Desliga os motores
+    Dispositivo_LeiaBytePorta(disp, DISQUETE_PORTA_ES_SAIDA_DIGITAL, &valor);
+    valor &= 0xf;
+    Dispositivo_EscrevaBytePorta(disp, DISQUETE_PORTA_ES_SAIDA_DIGITAL, valor);
     *dispositivo = disp;
     return ret;
 }
@@ -95,18 +164,13 @@ Status_t Disquete_Registra(Pos_t posicao, Boleano_t micro, Pos_t * dispositivo)
 void Disquete()
 {
     Pos_t disp = 0;
-    Mensagem("Disquete", "Registrando dispositivos", 0);
-    Disquete_Registra(0, SIM, &disp);
-    Disquete_Registra(1, SIM, &disp);
-    Disquete_Registra(0, NAO, &disp);
-    Disquete_Registra(1, NAO, &disp);
+    Byte_t cmos = CMOS_LeiaRegistrador(16);
+    Byte_t cmosA = (cmos >> 4) & 0xf;
+    Byte_t cmosB = cmos & 0xf;
+
+    if(cmosA != 0) Disquete_Registra(0, cmosA, &disp);
+    if(cmosB != 0) Disquete_Registra(1, cmosB, &disp);
 
     IRQ_Registra(6, &Disquete_IRQ6);
 
-    Byte_t valor = 0;
-
-    // Desliga os motores
-    Dispositivo_LeiaBytePorta(disp, DISQUETE_PORTA_ES_SAIDA_DIGITAL, &valor);
-    valor &= 0xf;
-    Dispositivo_EscrevaBytePorta(disp, DISQUETE_PORTA_ES_SAIDA_DIGITAL, valor);
 }

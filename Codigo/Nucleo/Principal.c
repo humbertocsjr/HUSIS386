@@ -225,6 +225,7 @@ void Inicio()
     IDT();
     ISR();
     IRQ();
+    CMOS();
     Unidade();
     Dispositivo();
     Processo();

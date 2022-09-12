@@ -320,4 +320,14 @@
 /* Armazenamento.c */
     extern void Armazenamento();
 
+/* SisArq.c */
+    extern void SisArq();
+
+/* CMOS.c */
+    extern void CMOS();
+    extern Byte_t CMOS_LeiaRegistrador(Pos_t registrador);
+    extern void Relogio_Leia(DataHora_t * datahora);
+    extern void Relogio_LeiaHora(Byte_t * segundo, Byte_t * minuto, Byte_t * hora);
+    extern void Relogio_LeiaData(Byte_t * dia, Byte_t * mes, UShort_t * ano);
+
 #endif
