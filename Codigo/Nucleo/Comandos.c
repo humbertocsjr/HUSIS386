@@ -482,7 +482,7 @@ Status_t _Comando_CmdTexto(SByte_t * args, Tam_t argsTam, void (*saidaTexto)(SBy
                 continua = NAO;
                 break;
             }
-            saidaTexto("{0:h}", temp[i]);
+            saidaTexto("{0:c}", temp[i]);
         }
         pos += qtd;
     }

@@ -238,6 +238,7 @@ void Inicio()
 
     // Dispositivos
     Armazenamento();
+    Comunicacao();
 
     // Sistemas de arquivos
     SisArq();

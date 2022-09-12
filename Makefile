@@ -18,7 +18,7 @@ disquete: all
 
 qemu: iso disquete
 	@echo " -= Executando Emulador =-"
-	@qemu-system-i386 -boot a -m 16 -drive format=raw,file=husis.img,if=floppy -hda husis.qcow2 -cdrom husis.iso
+	@qemu-system-i386 -boot a -m 16 -drive format=raw,file=husis.img,if=floppy -hda husis.qcow2 -cdrom husis.iso -serial stdio
 
 mac-requisitos:
 	brew install nasm mtool

@@ -1,7 +1,6 @@
 #include <HUSIS.h>
 
 
-
 #define SISTEMA_DE_ARQUIVOS_NOME_TAM 32
 
 typedef struct

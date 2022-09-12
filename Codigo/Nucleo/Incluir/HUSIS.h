@@ -8,6 +8,7 @@
     #define ARMAZENAMENTO_ATA
     #define ARMAZENAMENTO_DISQUETE
     #define SISARQ_HARQ
+    #define COMUNICACAO_SERIAL
 
 
     #define MSG_ESCREVE_NO_TERM -1
@@ -322,6 +323,9 @@
 
 /* SisArq.c */
     extern void SisArq();
+
+/* Comunicacao.c */
+    extern void Comunicacao();
 
 /* CMOS.c */
     extern void CMOS();
